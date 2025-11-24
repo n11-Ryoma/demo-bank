@@ -1,0 +1,75 @@
+CREATE DATABASE ebank;
+
+
+\c ebank;
+
+-- ユーザ（認証情報）
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
+
+-- ロール（権限）
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+
+-- ユーザ ↔ ロール
+CREATE TABLE user_roles (
+    user_id INTEGER REFERENCES users(id),
+    role_id INTEGER REFERENCES roles(id)
+);
+
+-- 銀行口座
+CREATE TABLE accounts (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    account_number VARCHAR(255) UNIQUE NOT NULL,
+    balance BIGINT NOT NULL DEFAULT 0
+);
+
+-- 取引履歴（送金や入出金）
+CREATE TABLE transactions (
+    id SERIAL PRIMARY KEY,
+    account_id INTEGER REFERENCES accounts(id),
+    amount BIGINT NOT NULL,
+    type VARCHAR(50) NOT NULL, -- "DEPOSIT", "WITHDRAW", "TRANSFER"
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- 管理者ロール / 一般ロール
+INSERT INTO roles (name) VALUES ('ADMIN'), ('USER');
+
+-- デフォルトユーザ（ハッキング用）
+INSERT INTO users (username, password)
+VALUES 
+    ('admin', 'password123'), 
+    ('taro',  'password123'),
+    ('hanako','password123');
+
+-- ログインユーザのロール割当
+INSERT INTO user_roles (user_id, role_id) VALUES
+    (1, 1), -- admin は ADMIN
+    (2, 2), -- taro は USER
+    (3, 2); -- hanako は USER
+
+-- taro の口座
+INSERT INTO accounts (user_id, account_number, balance)
+VALUES (2, '0001-0000001', 500000);
+
+-- hanako の口座
+INSERT INTO accounts (user_id, account_number, balance)
+VALUES (3, '0001-0000002', 120000);
+
+-- admin の「見えるだけ」用口座（残高は0でOK）
+INSERT INTO accounts (user_id, account_number, balance)
+VALUES (1, '9999-9999999', 0);
+
+-- 初期トランザクション（適当）
+INSERT INTO transactions (account_id, amount, type)
+VALUES
+    (1, 500000, 'DEPOSIT'),
+    (2, 120000, 'DEPOSIT');
