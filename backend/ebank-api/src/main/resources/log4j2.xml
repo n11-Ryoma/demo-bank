@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <!-- ファイル出力先 -->
+        <File name="FileAppender" fileName="C:/Users/Ryoma/Desktop/+Acts/log/api.log" append="true">
+            <PatternLayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</pattern>
+            </PatternLayout>
+        </File>
+
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p [%t] %c - %m%n"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <!-- 自作アプリ用ログ -->
+        <Logger name="com.example.eshop" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="FileAppender"/> <!-- ← 追加ポイント -->
+        </Logger>
+
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="FileAppender"/> <!-- ← 追加ポイント -->
+        </Root>
+    </Loggers>
+</Configuration>
