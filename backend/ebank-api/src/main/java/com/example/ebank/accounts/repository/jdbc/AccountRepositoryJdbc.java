@@ -2,6 +2,7 @@ package com.example.ebank.accounts.repository.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,11 +21,15 @@ public class AccountRepositoryJdbc {
 	public AccountRepositoryJdbc(JdbcTemplate jdbc) {
 	    this.jdbc = jdbc;
 	}
-	public Account findByAccountNumber(String accountNumber) {
-	     String sql = "SELECT id, user_id, account_number, balance FROM accounts WHERE account_number = '" + accountNumber + "'";
-	     log.info("### Executing SQL: {}", sql);
-	     return jdbc.queryForObject(sql, this::mapRow);
+	public List<Account> findByAccountNumber(String accountNumber) {
+	    String sql = "SELECT id, user_id, account_number, balance FROM accounts " +
+	                 "WHERE account_number = '" + accountNumber + "'";
+
+	    log.info("### Executing SQL: {}", sql);
+
+	    return jdbc.query(sql, this::mapRow);
 	}
+
 	
 	private Account mapRow(ResultSet rs, int rowNum) throws SQLException {
 	    Account a = new Account();

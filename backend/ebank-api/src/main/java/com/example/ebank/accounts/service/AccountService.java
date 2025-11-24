@@ -1,5 +1,7 @@
 package com.example.ebank.accounts.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.example.ebank.accounts.dto.BalanceResponse;
@@ -20,28 +22,20 @@ public class AccountService {
     }
 
     public BalanceResponse getBalance(String username, String accountNumber) {
-    		/*
-        // username → user 情報取得
-	    	List<User> users = userRepository.findByUsername(username);
-	
-	    	if (users.isEmpty()) {
-	    	    throw new RuntimeException("User not found");
-	    	}
-	
-	    	User user = users.get(0);
-		*/
-        // 口座取得
-        Account acc = accountRepository.findByAccountNumber(accountNumber);
-        if (acc == null) {
+
+        // ★ 返り値が List<Account> になる
+        List<Account> accounts = accountRepository.findByAccountNumber(accountNumber);
+
+        if (accounts.isEmpty()) {
             throw new RuntimeException("Account not found");
         }
-        	/*
-        // 所有者チェック（IDOR対策）
-        if (!acc.getUserId().equals(user.getId())) {
-            throw new RuntimeException("Access denied: not your account");
-        }
-		*/
+
+        // ★ よわよわ：1件目だけ利用（SQLi で大量に返っても対応）
+        Account acc = accounts.get(0);
+
+        // ★ IDOR のためユーザチェックは削除
         return new BalanceResponse(acc.getAccountNumber(), acc.getBalance());
     }
+
 }
 
