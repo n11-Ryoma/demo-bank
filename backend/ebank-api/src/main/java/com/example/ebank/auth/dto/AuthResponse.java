@@ -1,24 +1,17 @@
 package com.example.ebank.auth.dto;
 
-import java.util.List;
-
 public class AuthResponse {
 
     private String token;
     private String status;
-    private String username;
-    private List<String> roles;
-    private String message;
 
     public AuthResponse() {}
 
-    public AuthResponse(String token, String status, String username, List<String> roles, String message) {
+    public AuthResponse(String token, String status) {
         this.token = token;
         this.status = status;
-        this.username = username;
-        this.roles = roles;
-        this.message = message;
     }
+    
 
     public String getToken() {
         return token;
@@ -36,27 +29,4 @@ public class AuthResponse {
         this.status = status;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public List<String> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(List<String> roles) {
-        this.roles = roles;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 }

@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.example.ebank.auth.dto.AuthResponse;
-import com.example.ebank.auth.dto.LoginRequest;
 import com.example.ebank.auth.dto.RegisterRequest;
 import com.example.ebank.auth.dto.RegisterResponse;
 import com.example.ebank.auth.entity.User;
@@ -28,36 +26,9 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
-    public AuthResponse login(LoginRequest request) {
-
-        List<User> users =
-                userRepository.findByUsernameAndPasswordVuln(
-                        request.getUsername(),
-                        request.getPassword()
-                );
-
-        if (users.isEmpty()) {
-            throw new RuntimeException("Invalid username or password");
-        }
-
-        User user = users.get(0);
-
-        // ここでロールを取得して User にセット
-        user.setRoles(roleRepository.findByUserId(user.getId()));
-
-        // JWT発行
-        String token = jwtUtil.generateToken(
-                user.getUsername(),
-                user.getRoleNames()
-        );
-
-        return new AuthResponse(
-                token,
-                "success",
-                user.getUsername(),
-                user.getRoleNames(),
-                "Login successful"
-        );
+    // ★ よわよわログイン（SQLiがそのまま効く）
+    public List<User> loginWeak(String username, String password) {
+        return userRepository.findByUsernameAndPasswordVuln(username, password);
     }
     
     public RegisterResponse register(RegisterRequest request) {

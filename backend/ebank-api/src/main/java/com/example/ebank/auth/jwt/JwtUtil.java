@@ -1,15 +1,18 @@
 package com.example.ebank.auth.jwt;
 
 import java.security.Key;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
+
+import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-
+@Component
 public class JwtUtil {
 
     private static final String SECRET = "change-this-secret-key-to-something-long-1234567890";
@@ -32,6 +35,9 @@ public class JwtUtil {
                 .setExpiration(expiryDate)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+    public String generateToken(String username) {
+        return generateToken(username, Collections.emptyList());
     }
 
     public String extractUsername(String token) {

@@ -1,9 +1,9 @@
 package com.example.ebank.auth.controller;
 
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.ebank.auth.dto.AuthResponse;
 import com.example.ebank.auth.dto.LoginRequest;
-import com.example.ebank.auth.dto.RegisterRequest;
-import com.example.ebank.auth.dto.RegisterResponse;
+import com.example.ebank.auth.entity.User;
+import com.example.ebank.auth.jwt.JwtUtil;
 import com.example.ebank.auth.service.AuthService;
 
 @RestController
@@ -21,45 +21,38 @@ public class AuthController {
 
     private static final Logger log = LogManager.getLogger(AuthController.class);
 
-    //private final UserRepositoryJdbc userRepository;
-    //private final RoleRepositoryJdbc roleRepository;
-
-    //private final JwtUtil jwtUtil;   // ★ 追加
-
     private final AuthService authService;
+    private final JwtUtil jwtUtil;
 
-    // ★ AuthService だけをDIする
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, JwtUtil jwtUtil) {
         this.authService = authService;
+        this.jwtUtil = jwtUtil;
     }
 
+    // ==========================
+    //  脆弱なログイン（SQLi OK）
+    // ==========================
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        try {
-            AuthResponse response = authService.login(request);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            log.warn("Login failed: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } catch (Exception e) {
-            log.error("Login failed (exception)", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-        
-    	
-    }
-    
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        try {
-            RegisterResponse response = authService.register(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("Register failed", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new RegisterResponse("error", "Internal server error"));
-        }
-    }
+    public AuthResponse login(@RequestBody LoginRequest request) {
 
+        log.info("Login attempt: {}", request.getUsername());
+
+        // よわよわ構成（SQLiするならこの構造が大正解）
+        List<User> users =
+                authService.loginWeak(request.getUsername(), request.getPassword());
+
+        if (users.isEmpty()) {
+            log.warn("Login failed: no user");
+            throw new RuntimeException("Invalid username or password");
+        }
+
+        // ★ 脆弱点：
+        // 複数ユーザが返ったら勝手に先頭を採用
+        User user = users.get(0);
+
+        // JWT 発行
+        String token = jwtUtil.generateToken(user.getUsername());
+
+        return new AuthResponse(token, "success");
+    }
 }
-
