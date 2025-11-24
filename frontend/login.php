@@ -155,12 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label for="password">パスワード</label>
         <input type="password" id="password" name="password" required>
 
-        <label for="accountNumber">口座番号</label>
-        <input type="text" id="accountNumber" name="accountNumber"
-               value="<?php echo isset($accountNumber) ? htmlspecialchars($accountNumber, ENT_QUOTES, 'UTF-8') : '0001-0000001'; ?>"
-               required>
-
-        <button type="submit">ログインして残高表示</button>
+        <button type="submit">ログイン</button>
     </form>
 </div>
 </body>
