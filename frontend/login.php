@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>eBank ログイン</title>
+    <title>+Acts Bank ログイン</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
     <div class="card shadow-sm" style="max-width: 420px; width: 100%;">
         <div class="card-header text-center bg-primary text-white">
-            <h4 class="my-2">eBank ログイン</h4>
+            <h4 class="my-2">+Acts Bank ログイン</h4>
         </div>
         <div class="card-body">
             <?php if ($error): ?>
