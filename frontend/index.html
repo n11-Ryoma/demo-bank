@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>+Acts Bank｜トップページ</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        .hero {
+            position: relative;
+            background: url('images/hero-city.jpg') center/cover no-repeat;
+            height: 60vh;
+            min-height: 380px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-shadow: 0 2px 6px rgba(0,0,0,.5);
+        }
+
+        /* 少しだけ暗くする（前より弱め） */
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.18); /* 0.35 → 0.18 に弱めた */
+            z-index: 1;
+        }
+
+        /* ヒーロー内のテキスト＆ボタンを前面に */
+        .hero .content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .btn-login {
+            padding: 14px 32px;
+            font-size: 1.1rem;
+        }
+
+        footer {
+            background-color: #f8f9fa;
+            padding: 25px 0;
+            margin-top: 60px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ナビバー -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="index.html">
+            <img src="images/logo.png" alt="logo" style="height:60px; margin-right:10px;">
+            <span class="fw-bold fs-4">+Acts Bank</span>
+        </a>
+        <div class="d-flex">
+            <a href="login.php" class="btn btn-primary btn-sm">ログイン</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ヒーローエリア -->
+<div class="hero">
+    <div class="content">
+        <h1 class="fw-bold mb-3">あなたの大切なお金を、もっと便利に。</h1>
+        <p class="mb-4 fs-5">+Acts Bank は、安心・安全のオンラインバンキングを提供します。</p>
+        <a href="login.php" class="btn btn-primary btn-login shadow">ログインはこちら</a>
+    </div>
+</div>
+
+<!-- 特長セクション -->
+<div class="container my-5">
+    <div class="row text-center gy-4">
+
+        <div class="col-md-4">
+            <div class="p-4 border rounded h-100 shadow-sm">
+                <h5 class="fw-bold mb-2">安全な取引</h5>
+                <p class="text-muted">高度なセキュリティによりお客様の資産を守ります。</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="p-4 border rounded h-100 shadow-sm">
+                <h5 class="fw-bold mb-2">24時間アクセス</h5>
+            <p class="text-muted">どこでも、いつでも残高・明細確認が可能。</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="p-4 border rounded h-100 shadow-sm">
+                <h5 class="fw-bold mb-2">スムーズな振込</h5>
+                <p class="text-muted">直感的な操作で簡単に送金ができます。</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- フッター -->
+<footer>
+    <div class="container text-center text-muted small">
+        <p class="mb-0">&copy; 2025 +Acts Bank. All rights reserved.</p>
+    </div>
+</footer>
+
+</body>
+</html>

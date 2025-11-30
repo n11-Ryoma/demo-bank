@@ -13,7 +13,7 @@ $error = null;
 try {
     $res = api_request('GET', '/api/accounts/balance', null, true);
     if ($res['status'] === 200) {
-        $balance = $res['body']['balance'];
+        $balance       = $res['body']['balance'];
         $accountNumber = $res['body']['accountNumber'];
     } else {
         $error = '残高取得に失敗しました。';
@@ -38,9 +38,8 @@ $flashError   = flash('flash_error');
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-0">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="dashboard.php">
-        <img src="images/logo.png" alt="eBank Logo"
-            style="height:100px; margin-right:8px;">
-
+            <img src="images/logo.png" alt="eBank Logo"
+                 style="height:100px; margin-right:8px;">
             <span class="fw-bold">+Acts Bank</span>
         </a>
         <div class="d-flex">
@@ -74,23 +73,29 @@ $flashError   = flash('flash_error');
                         振込
                     </a>
                 </li>
-
+                <!-- ★ ここを「住所変更」にする -->
+                <li class="nav-item">
+                    <a class="nav-link" href="address_change.php">
+                        住所変更
+                    </a>
+                </li>
             </ul>
         </nav>
+
 
         <!-- メイン領域 -->
         <main class="col-md-9 col-lg-10 p-4">
 
             <?php if ($flashMessage): ?>
-                <div class="alert alert-success"><?= htmlspecialchars($flashMessage) ?></div>
+                <div class="alert alert-success"><?= htmlspecialchars($flashMessage, ENT_QUOTES, 'UTF-8') ?></div>
             <?php endif; ?>
 
             <?php if ($flashError): ?>
-                <div class="alert alert-danger"><?= htmlspecialchars($flashError) ?></div>
+                <div class="alert alert-danger"><?= htmlspecialchars($flashError, ENT_QUOTES, 'ENT_QUOTES', 'UTF-8') ?></div>
             <?php endif; ?>
 
             <?php if ($error): ?>
-                <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+                <div class="alert alert-danger"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
             <?php endif; ?>
 
             <!-- 残高カード -->
@@ -99,20 +104,24 @@ $flashError   = flash('flash_error');
                     <h5 class="card-title mb-3">メイン口座</h5>
 
                     <p class="text-muted mb-1">口座番号</p>
-                    <p class="fs-6 fw-semibold"><?= htmlspecialchars($accountNumber) ?></p>
+                    <p class="fs-6 fw-semibold"><?= htmlspecialchars($accountNumber, ENT_QUOTES, 'UTF-8') ?></p>
 
                     <p class="text-muted mb-1">現在残高</p>
-                    <p class="fs-2 fw-bold text-primary"><?= number_format($balance) ?> 円</p>
+                    <p class="fs-2 fw-bold text-primary"><?= $balance !== null ? number_format($balance) . ' 円' : '---' ?></p>
 
-                    <!-- 🔥 取引明細ボタン（遷移できる版） -->
-                    <div class="col-12 mt-4">
-                        <a href="transactions.php" class="btn btn-primary w-100">
-                            取引明細を見る
-                        </a>
+                    <div class="row mt-4 g-2">
+                        <!-- 取引明細 -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <a href="transactions.php" class="btn btn-primary w-100">取引明細を見る</a>
+                        </div>
                     </div>
+
+
+                    </div>
+
                 </div>
             </div>
-
 
             <!-- 振込フォーム -->
             <div id="transfer" class="card shadow-sm">
@@ -145,7 +154,22 @@ $flashError   = flash('flash_error');
                     </form>
                 </div>
             </div>
+            <div id="transfer" class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">振込</h5>
+                </div>
+                <div class="card-body">
+                    <!-- ★ 住所変更ボタン -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <a href="address_change.php" class="btn btn-outline-primary w-100">
+                            住所変更のお手続き
+                        </a>
+                    </div>
+                </div>
 
+                </div>
+            </div>
         </main>
 
     </div>

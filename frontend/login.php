@@ -62,7 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             初めての方は
             <a href="register.php">口座開設</a>
         </div>
-
+        <div class="card-footer text-center text-muted small">
+            <a href="index.html">HP</a>
+        </div>
     </div>
 </div>
 

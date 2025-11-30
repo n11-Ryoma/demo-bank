@@ -12,6 +12,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+
 @Component
 public class JwtUtil {
 
@@ -24,21 +25,36 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
-    public String generateToken(String username, List<String> roles) {
+    /**
+     * ★ 推奨：userId も含めてトークンを発行する版
+     */
+    public String generateToken(Long userId, String username, List<String> roles) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + EXPIRATION_MS);
 
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(username)          // "sub"
+                .claim("id", userId)           // ★ ここで userId を入れる
                 .claim("roles", roles)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
-    public String generateToken(String username) {
-        return generateToken(username, Collections.emptyList());
+
+    /**
+     * 旧シグネチャは互換用として残す（id=null で発行）。
+     * ログイン周りをあとで必ず generateToken(user.getId(), ...) に切り替えてね。
+     */
+    public String generateToken(String username, List<String> roles) {
+        return generateToken(null, username, roles);
     }
+
+    public String generateToken(String username) {
+        return generateToken(null, username, Collections.emptyList());
+    }
+
+    // --- 抽出系 ---
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -46,7 +62,27 @@ public class JwtUtil {
 
     @SuppressWarnings("unchecked")
     public List<String> extractRoles(String token) {
-        return extractAllClaims(token).get("roles", List.class);
+        List<String> roles = extractAllClaims(token).get("roles", List.class);
+        return roles != null ? roles : Collections.emptyList();
+    }
+
+    /**
+     * ★ 追加：JWT から userId を取り出す
+     */
+    public Long extractUserId(String token) {
+        Claims claims = extractAllClaims(token);
+        Object idObj = claims.get("id");
+        if (idObj == null) {
+            return null;
+        }
+        if (idObj instanceof Integer i) {
+            return i.longValue();
+        }
+        if (idObj instanceof Long l) {
+            return l;
+        }
+        // String 等にも一応対応
+        return Long.valueOf(String.valueOf(idObj));
     }
 
     public Date extractExpiration(String token) {
@@ -75,11 +111,10 @@ public class JwtUtil {
             Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJws(token);  // ★ 署名＆expチェック
+                .parseClaimsJws(token);  // 署名＆expチェック
             return true;
         } catch (Exception e) {
             return false;
         }
     }
-
 }

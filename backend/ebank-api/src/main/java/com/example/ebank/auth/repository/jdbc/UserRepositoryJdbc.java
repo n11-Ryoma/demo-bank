@@ -64,4 +64,5 @@ public class UserRepositoryJdbc {
         String sql = "INSERT INTO users (username, password) VALUES (?, ?) RETURNING id";
         return jdbc.queryForObject(sql, Long.class, username, password);
     }
+
 }

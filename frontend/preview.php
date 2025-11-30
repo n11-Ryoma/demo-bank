@@ -1,31 +1,30 @@
 <?php
 // preview.php
-require_once 'config.php';
+// 本来は厳密なパスチェックをすべきだが、デモ／CTF 用にあえてガバガバ実装にしている
 
-if (!isset($_SESSION['jwt_token'])) {
-    header('Location: login.php');
+$file = $_GET['file'] ?? '';
+
+if ($file === '') {
+    http_response_code(400);
+    echo 'file parameter is required';
     exit;
 }
 
-// デフォルトは「明細プレビュー用テンプレート」
-$tpl = $_GET['tpl'] ?? 'statement.php';
+// アップロード用のベースディレクトリ
+// 例: /var/www/html/uploads/
+// ここからの相対パスとして扱うつもり…だが、realpath等でのチェックはしていないのでLFIになる
+$baseDir = __DIR__ . '/uploads/';
 
-// 本来ならホワイトリスト & ../ 禁止にすべきだが、CTF/ラボ用に緩くする
-$baseDir = __DIR__ . '/templates/';
-$path = $baseDir . $tpl;
+// ★ そのまま連結（../ を許してしまうパターン）
+$target = $baseDir . $file;
 
-if (!is_file($path)) {
+// 存在チェックだけはしておく
+if (!file_exists($target)) {
     http_response_code(404);
-    echo 'テンプレートが見つかりません: '
-        . htmlspecialchars($tpl, ENT_QUOTES, 'UTF-8');
+    echo 'file not found';
     exit;
 }
 
-// ★ LFIの起点：ユーザー指定ファイルをそのまま include
-//   ※ 本番では絶対にやっちゃダメ。ラボ・CTF専用。
-include $path;
-
-
-
-
+// Content-Type は雑に処理（画像でもテキストでもブラウザに任せる）
+include $target;
 

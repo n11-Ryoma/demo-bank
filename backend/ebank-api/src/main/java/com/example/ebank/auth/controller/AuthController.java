@@ -1,5 +1,6 @@
 package com.example.ebank.auth.controller;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -54,8 +55,8 @@ public class AuthController {
         User user = users.get(0);
 
         // JWT 発行
-        String token = jwtUtil.generateToken(user.getUsername());
-
+        //String token = jwtUtil.generateToken(user.getUsername());
+        String token = jwtUtil.generateToken(user.getId(), user.getUsername(), Collections.emptyList());
         return new AuthResponse(token, "success");
     }
     @PostMapping("/register")
