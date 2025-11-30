@@ -45,6 +45,17 @@ public class RoleRepositoryJdbc {
         jdbc.update(sql, userId, roleId);
     }
 
+    // ★ ユーザ名が既に存在するかチェック
+    public boolean existsByUsername(String username) {
+        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
+        Integer count = jdbc.queryForObject(sql, Integer.class, username);
+        return count != null && count > 0;
+    }
 
+    // ★ ユーザ作成して新しい ID を返す（パスワードはデモ用で平文のまま）
+    public Long createUser(String username, String password) {
+        String sql = "INSERT INTO users (username, password) VALUES (?, ?) RETURNING id";
+        return jdbc.queryForObject(sql, Long.class, username, password);
+    }
 
 }

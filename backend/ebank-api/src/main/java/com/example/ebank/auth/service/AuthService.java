@@ -3,7 +3,9 @@ package com.example.ebank.auth.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.ebank.accounts.repository.jdbc.AccountRepositoryJdbc;
 import com.example.ebank.auth.dto.RegisterRequest;
 import com.example.ebank.auth.dto.RegisterResponse;
 import com.example.ebank.auth.entity.User;
@@ -17,13 +19,16 @@ public class AuthService {
     private final UserRepositoryJdbc userRepository;
     private final RoleRepositoryJdbc roleRepository;
     private final JwtUtil jwtUtil;
+    private final AccountRepositoryJdbc accountRepository;
 
     public AuthService(UserRepositoryJdbc userRepository,
                        RoleRepositoryJdbc roleRepository,
-                       JwtUtil jwtUtil) {
+                       JwtUtil jwtUtil,
+                       AccountRepositoryJdbc accountRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.jwtUtil = jwtUtil;
+        this.accountRepository = accountRepository;
     }
 
     // ★ よわよわログイン（SQLiがそのまま効く）
@@ -31,28 +36,31 @@ public class AuthService {
         return userRepository.findByUsernameAndPasswordVuln(username, password);
     }
     
+    // ★ 登録処理
+    @Transactional
     public RegisterResponse register(RegisterRequest request) {
 
-        // username だけで検索する
-        List<User> existing = userRepository.findByUsername(request.getUsername());
+        String username = request.getUsername();
+        String password = request.getPassword();
 
-        if (!existing.isEmpty()) {
-            return new RegisterResponse("error", "Username already exists");
+        if (userRepository.existsByUsername(username)) {
+            throw new RuntimeException("Username already exists: " + username);
         }
 
-        // 新規ユーザー作成
-        int userId = userRepository.insertUser(
-                request.getUsername(),
-                request.getPassword()
-        );
+        // ① usersテーブルにユーザ作成 → userIdが返る
+        Long userId = userRepository.createUser(username, password);
 
-        // USER ロール付与
-        int roleId = roleRepository.findRoleIdByName("USER");
-        roleRepository.insertUserRole(userId, roleId);
+        // ② accountsテーブルにメイン口座作成
+        String accountNumber = accountRepository.createMainAccountForUser(userId);
 
-        return new RegisterResponse("success", "User registered successfully");
+        // ③ 結果返す
+        RegisterResponse res = new RegisterResponse();
+        res.setUsername(username);
+        res.setAccountNumber(accountNumber);
+        res.setMessage("User registered and main account created");
+
+        return res;
     }
-
 
 }
 

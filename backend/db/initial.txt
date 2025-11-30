@@ -73,3 +73,50 @@ INSERT INTO transactions (account_id, amount, type)
 VALUES
     (1, 500000, 'DEPOSIT'),
     (2, 120000, 'DEPOSIT');
+
+
+-- accounts テーブル作成
+CREATE TABLE accounts (
+    id              BIGSERIAL PRIMARY KEY,          -- 口座レコードID
+    user_id         BIGINT NOT NULL,                -- users.id へのFK
+    account_number  VARCHAR(20) NOT NULL,           -- 口座番号 (例: 0001-0000001)
+    balance         BIGINT NOT NULL DEFAULT 0,      -- 残高（円）
+    is_main         BOOLEAN NOT NULL DEFAULT FALSE, -- メイン口座フラグ
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- users テーブルへの外部キー制約
+ALTER TABLE accounts
+  ADD CONSTRAINT fk_accounts_user
+  FOREIGN KEY (user_id)
+  REFERENCES users (id)
+  ON DELETE CASCADE;
+
+-- 口座番号はユニークにしておく
+CREATE UNIQUE INDEX ux_accounts_account_number
+  ON accounts (account_number);
+
+-- 「ユーザごとにメイン口座は1つまで」にしたい場合の部分ユニークインデックス
+CREATE UNIQUE INDEX ux_accounts_user_main
+  ON accounts (user_id)
+  WHERE is_main = TRUE;
+
+
+INSERT INTO accounts (user_id, account_number, balance, is_main)
+VALUES
+  (1, '0001-0000001', 150000, TRUE),   -- ユーザ1のメイン口座
+  (1, '0001-0000002',  50000, FALSE),  -- ユーザ1のサブ口座
+  (2, '0002-0000001', 230000, TRUE);   -- ユーザ2のメイン口座
+
+CREATE TABLE transactions (
+    id BIGSERIAL PRIMARY KEY,
+    account_id      BIGINT NOT NULL,              -- この口座視点の取引
+    type            VARCHAR(20) NOT NULL,        -- DEPOSIT / WITHDRAW / TRANSFER_IN / TRANSFER_OUT
+    amount          BIGINT NOT NULL,             -- 絶対値（金額）。マイナスにはしない設計
+    balance_after   BIGINT NOT NULL,             -- この取引後の残高（将来の履歴表示用）
+    related_account_number VARCHAR(50),          -- 振込相手など
+    description     VARCHAR(255),                -- メモ（ATM入金 etc）
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+

@@ -1,14 +1,29 @@
+// src/main/java/com/example/ebank/auth/dto/RegisterResponse.java
 package com.example.ebank.auth.dto;
 
 public class RegisterResponse {
-    private String status;
+    private String username;
+    private String accountNumber;
     private String message;
 
-    public RegisterResponse(String status, String message) {
-        this.status = status;
-        this.message = message;
+    public String getUsername() {
+        return username;
+    }
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getStatus() { return status; }
-    public String getMessage() { return message; }
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }
