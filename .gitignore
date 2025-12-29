@@ -1,0 +1,8 @@
+# Next.js
+frontend/.next/
+frontend/node_modules/
+frontend/.env
+frontend/.env.local
+# logs
+backend/ebank-api/logs/
+*.log

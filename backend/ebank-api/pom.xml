@@ -124,6 +124,13 @@
 		    <artifactId>postgresql</artifactId>
 		    <scope>runtime</scope>
 		</dependency>
+		<!-- OpenAPI / Swagger UI (Spring Boot 2.x) -->
+		<dependency>
+		  <groupId>org.springdoc</groupId>
+		  <artifactId>springdoc-openapi-ui</artifactId>
+		  <version>1.8.0</version>
+		</dependency>
+
     </dependencies>
 
     <build>

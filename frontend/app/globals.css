@@ -1,0 +1,19 @@
+html, body { height: 100%; }
+
+.sidebar {
+  min-height: 100vh;
+}
+
+.brand-logo {
+  height: 100px;
+  margin-right: 8px;
+  object-fit: contain;
+}
+
+.card-title {
+  letter-spacing: 0.2px;
+}
+
+.table td, .table th {
+  vertical-align: middle;
+}

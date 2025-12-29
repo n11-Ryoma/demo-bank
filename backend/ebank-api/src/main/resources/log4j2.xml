@@ -1,28 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
-    <Appenders>
-        <!-- ファイル出力先 -->
-        <File name="FileAppender" fileName="C:/Users/Ryoma/Desktop/+Acts/log/api.log" append="true">
-            <PatternLayout>
-                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</pattern>
-            </PatternLayout>
-        </File>
+  <Properties>
+    <Property name="LOG_DIR">${sys:user.dir}/logs</Property>
+    <Property name="APP_LOG">${LOG_DIR}/api.log</Property>
+    <Property name="AUDIT_LOG">${LOG_DIR}/audit.log</Property>
+    <Property name="SEC_LOG">${LOG_DIR}/security.log</Property>
+  </Properties>
 
-        <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p [%t] %c - %m%n"/>
-        </Console>
-    </Appenders>
+  <Appenders>
+    <!-- 通常ログ（requestId も出す） -->
+    <File name="AppFile" fileName="${APP_LOG}" append="true" createOnDemand="true">
+      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} [rid=%X{requestId}] - %msg%n"/>
+    </File>
 
-    <Loggers>
-        <!-- 自作アプリ用ログ -->
-        <Logger name="com.example.eshop" level="debug" additivity="false">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="FileAppender"/> <!-- ← 追加ポイント -->
-        </Logger>
+    <Console name="AppConsole" target="SYSTEM_OUT">
+      <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p [%t] %c [rid=%X{requestId}] - %m%n"/>
+    </Console>
 
-        <Root level="info">
-            <AppenderRef ref="Console"/>
-            <AppenderRef ref="FileAppender"/> <!-- ← 追加ポイント -->
-        </Root>
-    </Loggers>
+    <!-- 監査ログ：メッセージ(JSON)だけを1行で吐く -->
+    <File name="AuditFile" fileName="${AUDIT_LOG}" append="true" createOnDemand="true">
+      <PatternLayout pattern="%m%n"/>
+    </File>
+
+    <!-- セキュリティイベント：メッセージ(JSON)だけを1行で吐く -->
+    <File name="SecFile" fileName="${SEC_LOG}" append="true" createOnDemand="true">
+      <PatternLayout pattern="%m%n"/>
+    </File>
+  </Appenders>
+
+  <Loggers>
+    <!-- 監査/イベントは独立 -->
+    <Logger name="AUDIT" level="info" additivity="false">
+      <AppenderRef ref="AuditFile"/>
+    </Logger>
+
+    <Logger name="SECURITY_EVENT" level="warn" additivity="false">
+      <AppenderRef ref="SecFile"/>
+    </Logger>
+
+    <!-- アプリ -->
+    <Logger name="com.example.ebank" level="debug" additivity="false">
+      <AppenderRef ref="AppConsole"/>
+      <AppenderRef ref="AppFile"/>
+    </Logger>
+
+    <Root level="info">
+      <AppenderRef ref="AppConsole"/>
+      <AppenderRef ref="AppFile"/>
+    </Root>
+  </Loggers>
 </Configuration>

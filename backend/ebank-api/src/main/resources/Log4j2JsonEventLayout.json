@@ -1,0 +1,13 @@
+{
+  "timeMillis": "${json:timeMillis}",
+  "level": "${json:level}",
+  "loggerName": "${json:loggerName}",
+  "message": "${json:message}",
+  "thread": "${json:threadName}",
+  "requestId": "${json:mdc:requestId}",
+  "exception": {
+    "class": "${json:exception:className}",
+    "message": "${json:exception:message}",
+    "stackTrace": "${json:exception:stackTrace}"
+  }
+}
