@@ -6,3 +6,4 @@ frontend/.env.local
 # logs
 backend/ebank-api/logs/
 *.log
+git_autopush.bat

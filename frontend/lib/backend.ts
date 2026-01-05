@@ -8,60 +8,38 @@ const userCookie = process.env.USER_COOKIE_NAME ?? "ebank_user";
 type HttpMethod = "GET" | "POST";
 
 export class BackendError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public bodyText?: string
-  ) {
+  constructor(message: string, public status: number, public bodyText?: string) {
     super(message);
   }
 }
 
-export async function getUsername(): Promise<string> {
+export async function getUsername(): Promise<string | null> {
   const c = await cookies();
-  return c.get(userCookie)?.value ?? "";
+  return c.get(userCookie)?.value ?? null;
 }
 
-async function getToken(): Promise<string | undefined> {
-  const c = await cookies();
-  return c.get(tokenCookie)?.value;
-}
-
-// ✅ set/clear も async に統一（15.4 の dynamic API 対応）
-export async function setSession(token: string, username: string) {
-  const c = await cookies();
-  c.set(tokenCookie, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-  });
-  // username は表示用（不要なら消してOK）
-  c.set(userCookie, username, {
-    httpOnly: false,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-  });
-}
-
-export async function clearSession() {
-  const c = await cookies();
-  c.set(tokenCookie, "", { httpOnly: true, path: "/", maxAge: 0 });
-  c.set(userCookie, "", { httpOnly: false, path: "/", maxAge: 0 });
+function bearer(token: string) {
+  return token.startsWith("Bearer ") ? token : `Bearer ${token}`;
 }
 
 export async function backend<T>(
   path: string,
   opts: { method: HttpMethod; body?: unknown; auth?: boolean }
 ): Promise<T> {
+  const c = await cookies();
+
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    Accept: "application/json",
   };
 
-  if (opts.auth) {
-    const token = await getToken();
-    if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (opts.body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  // auth が false 以外なら token を付ける
+  if (opts.auth !== false) {
+    const token = c.get(tokenCookie)?.value;
+    if (token) headers["Authorization"] = bearer(token);
   }
 
   const res = await fetch(`${baseUrl}${path}`, {
