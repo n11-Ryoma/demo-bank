@@ -74,11 +74,10 @@ export async function registerAction(formData: FormData) {
   let ok = false;
 
   try {
-    // 返り値は不要。204/空bodyでもOK
     await backend<unknown>("/api/auth/register", {
       method: "POST",
       body: { username, password },
-      auth: false, // ← 念のため（registerは未ログイン前提）
+      auth: false, 
     });
     ok = true;
   } catch (e: any) {
@@ -86,7 +85,6 @@ export async function registerAction(formData: FormData) {
     ok = false;
   }
 
-  // ✅ redirect は try/catch の外で実行（これが重要）
   if (ok) {
     redirect("/login?registered=1");
   } else {
