@@ -112,7 +112,7 @@ public class AccountRepositoryJdbc {
 	    		    "LIMIT " + limit + " " +
 	    		    "OFFSET " + offset;*/
    
-	    	log.info("### Executing SQL: {}", sql);
+    	log.debug("### Executing SQL: {}", sql);
 	    	return jdbc.query(sql, (rs, rowNum) -> {
 	    	    TransactionHistoryItem item = new TransactionHistoryItem();
 	    	    item.setAccountNumber(rs.getString("account_number"));
@@ -143,7 +143,7 @@ public class AccountRepositoryJdbc {
     	    		    "JOIN users u ON a.user_id = u.id " +
     	    		    "WHERE u.username = '" + username + "' AND t.description LIKE '%" +findStr + "%' " ;
        
-    	    	log.info("### Executing SQL: {}", sql);
+    	    	log.debug("### Executing SQL: {}", sql);
     	    	return jdbc.query(sql, (rs, rowNum) -> {
     	    	    TransactionHistoryItem item = new TransactionHistoryItem();
     	    	    item.setAccountNumber(rs.getString("account_number"));

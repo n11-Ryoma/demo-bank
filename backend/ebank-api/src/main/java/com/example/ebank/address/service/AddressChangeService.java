@@ -7,6 +7,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.Base64;
 import java.util.UUID;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.example.ebank.address.dto.AddressChangeCommitRequest;
@@ -15,6 +17,8 @@ import com.example.ebank.address.repository.jdbc.AddressRepositoryJdbc;
 
 @Service
 public class AddressChangeService {
+
+    private static final Logger log = LogManager.getLogger(AddressChangeService.class);
 
     private final AddressRepositoryJdbc addressRepositoryJdbc;
 
@@ -54,7 +58,7 @@ public class AddressChangeService {
             return new AddressChangeResponse("PENDING");
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Address change failed", e);
             throw new RuntimeException("Address change failed: " + e.getMessage(), e);
         }
     }

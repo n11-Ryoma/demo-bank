@@ -11,12 +11,13 @@ psql --version
 =========================================
 
 sudo vi /etc/postgresql/16/main/postgresql.conf
+→いかになるように追記
 listen_addresses = '*'
 port = 5432
 
 psql -c "SHOW hba_file;"
 sudo vim /etc/postgresql/16/main/pg_hba.conf
-
+→いかになるように追記
 # TEMP: allow any (DO NOT USE IN PROD)
 host    all     all     0.0.0.0/0     scram-sha-256
 host    all     all     ::/0          scram-sha-256

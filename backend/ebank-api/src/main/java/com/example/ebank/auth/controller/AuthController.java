@@ -61,7 +61,6 @@ public class AuthController {
 
     log.info("Login attempt: {}", actor);
 
-    // よわよわ構成（SQLiするならこの構造が大正解）
     List<User> users = authService.loginWeak(request.getUsername(), request.getPassword());
 
     // 失敗
