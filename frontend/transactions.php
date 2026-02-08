@@ -8,13 +8,30 @@ if (!isset($_SESSION['jwt_token'])) {
 
 $error = null;
 $items = [];
+$findStr = trim($_GET['findStr'] ?? '');
 
 try {
-    $res = api_request('GET', '/api/accounts/transactions?limit=50&offset=0', null, true);
+    $query = [
+        'limit' => 50,
+        'offset' => 0,
+    ];
+    if ($findStr !== '') {
+        $query['findStr'] = $findStr;
+    }
+    $res = api_request('GET', '/api/accounts/transactions?' . http_build_query($query), null, true);
     if ($res['status'] === 200 && is_array($res['body'])) {
         $items = $res['body'];
     } else {
-        $error = '取引履歴の取得に失敗しました。';
+        $apiError = null;
+        if (is_string($res['body'] ?? null)) {
+            $apiError = $res['body'];
+        } elseif (is_array($res['body'] ?? null)) {
+            $apiError = $res['body']['message']
+                ?? $res['body']['error']
+                ?? json_encode($res['body'], JSON_UNESCAPED_UNICODE);
+        }
+        $status = $res['status'] ?? 'unknown';
+        $error = 'APIエラー (' . $status . '): ' . ($apiError ?: '取引履歴の取得に失敗しました、E');
     }
 } catch (Exception $e) {
     $error = '通信エラー: ' . $e->getMessage();
@@ -50,12 +67,17 @@ $username = $_SESSION['username'] ?? '';
 <div class="container">
     <h2 class="mb-3 d-flex justify-content-between align-items-center">
         <span>取引履歴</span>
-        <div class="btn-group">
-            <!-- ★ 明細プレビュー（preview.php を自然に呼ぶ） -->
+        <div class="d-flex align-items-center gap-2">
+            <form class="d-flex" method="get" action="transactions.php">
+                <input type="text" name="findStr" class="form-control form-control-sm" placeholder="メモ検索"
+                       value="<?= htmlspecialchars($findStr, ENT_QUOTES, 'UTF-8') ?>">
+                <button type="submit" class="btn btn-sm btn-outline-primary ms-2">検索</button>
+            </form>
+            <!-- ☁E明細プレビュー�E�E�E�Ereview.php を�E然に呼ぶ�E�E�E�E-->
             <a href="preview.php?tpl=statement.php" class="btn btn-sm btn-outline-primary">
                 明細プレビュー
             </a>
-            <!-- 既存の CSV ダウンロード -->
+            <!-- 既存�E CSV ダウンローチE-->
             <a href="transactions_export.php" class="btn btn-sm btn-outline-secondary">
                 CSVダウンロード
             </a>
@@ -65,7 +87,7 @@ $username = $_SESSION['username'] ?? '';
     <?php if ($error): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
     <?php elseif (empty($items)): ?>
-        <div class="alert alert-info">取引履歴はありません。</div>
+        <div class="alert alert-info">取引履歴はありません、E</div>
     <?php else: ?>
         <div class="card shadow-sm">
             <div class="card-body p-0">
@@ -73,7 +95,7 @@ $username = $_SESSION['username'] ?? '';
                     <table class="table table-striped mb-0 align-middle">
                         <thead class="table-light">
                         <tr>
-                            <th scope="col">日時</th>
+                            <th scope="col">日晁E</th>
                             <th scope="col">口座番号</th>
                             <th scope="col">種別</th>
                             <th scope="col" class="text-end">金額</th>
@@ -123,3 +145,7 @@ $username = $_SESSION['username'] ?? '';
 
 </body>
 </html>
+
+
+
+

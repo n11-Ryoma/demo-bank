@@ -106,10 +106,10 @@ public class AccountRepositoryJdbc {
 	    		    "FROM transactions t " +
 	    		    "JOIN accounts a ON t.account_id = a.id " +
 	    		    "JOIN users u ON a.user_id = u.id " +
-	    		    "WHERE u.username = '" + username + "' " +   // ← ★スペース追加
-	    		    "ORDER BY t.created_at DESC, t.id DESC " +
+	    		    "WHERE u.username = '" + username + "' " +   
+	    		    "ORDER BY t.created_at DESC, t.id DESC " ;/*+
 	    		    "LIMIT " + limit + " " +
-	    		    "OFFSET " + offset;
+	    		    "OFFSET " + offset;*/
    
 	    	log.info("### Executing SQL: {}", sql);
 	    	return jdbc.query(sql, (rs, rowNum) -> {
@@ -125,6 +125,37 @@ public class AccountRepositoryJdbc {
 	    	});
 
     }
+    public List<TransactionHistoryItem> findHistoryByUsernameFindStr(
+            String username, int limit, int offset,String findStr) {
+
+    	    	String sql =
+    	    		    "SELECT t.account_id, " +
+    	    		    "       a.account_number, " +
+    	    		    "       t.type, " +
+    	    		    "       t.amount, " +
+    	    		    "       t.balance_after, " +
+    	    		    "       t.related_account_number, " +
+    	    		    "       t.description, " +
+    	    		    "       t.created_at " +
+    	    		    "FROM transactions t " +
+    	    		    "JOIN accounts a ON t.account_id = a.id " +
+    	    		    "JOIN users u ON a.user_id = u.id " +
+    	    		    "WHERE u.username = '" + username + "' AND t.description LIKE '%" +findStr + "%' " ;
+       
+    	    	log.info("### Executing SQL: {}", sql);
+    	    	return jdbc.query(sql, (rs, rowNum) -> {
+    	    	    TransactionHistoryItem item = new TransactionHistoryItem();
+    	    	    item.setAccountNumber(rs.getString("account_number"));
+    	    	    item.setType(TransactionType.valueOf(rs.getString("type")));
+    	    	    item.setAmount(rs.getLong("amount"));
+    	    	    item.setBalanceAfter(rs.getLong("balance_after"));
+    	    	    item.setRelatedAccountNumber(rs.getString("related_account_number"));
+    	    	    item.setDescription(rs.getString("description"));
+    	    	    item.setCreatedAt(rs.getObject("created_at", java.time.OffsetDateTime.class)); // ここが落ちたらTimestamp版へ
+    	    	    return item;
+    	    	});
+
+        }
     // ユーザ用の口座を1つ自動作成して、口座番号を返す
     public String createMainAccountForUser(Long userId) {
 

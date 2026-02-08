@@ -50,10 +50,6 @@ public class AuthController {
     this.sec = sec;
     this.failureTracker = failureTracker;
   }
-
-  // ==========================
-  //  脆弱なログイン（SQLi OK）
-  // ==========================
   @PostMapping("/login")
   public AuthResponse login(@RequestBody LoginRequest request, HttpServletRequest httpReq) {
 

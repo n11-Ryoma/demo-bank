@@ -158,7 +158,9 @@ public class AccountService {
     public List<TransactionHistoryItem> getMyHistory(String username, int limit, int offset) {
         return accountRepository.findHistoryByUsername(username, limit, offset);
     }
-
+    public List<TransactionHistoryItem> getMyHistoryFindStr(String username, int limit, int offset,String findStr) {
+        return accountRepository.findHistoryByUsernameFindStr(username, limit, offset,findStr);
+    }
 }
 
 
