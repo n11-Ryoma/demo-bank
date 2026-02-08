@@ -1,4 +1,4 @@
-package com.example.ebank.auth.service;
+﻿package com.example.ebank.auth.service;
 
 import java.util.List;
 
@@ -26,13 +26,11 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
         this.accountRepository = accountRepository;
     }
-
-    // ★ よわよわログイン（SQLiがそのまま効く）
     public List<User> loginWeak(String username, String password) {
         return userRepository.findByUsernameAndPasswordVuln(username, password);
     }
     
-    // ★ 登録処理
+
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
 
@@ -43,13 +41,11 @@ public class AuthService {
             throw new RuntimeException("Username already exists: " + username);
         }
 
-        // ① usersテーブルにユーザ作成 → userIdが返る
-        Long userId = userRepository.createUser(username, password);
+        String email = request.getEmail();
+        Long userId = userRepository.createUser(username, password, email);
 
-        // ② accountsテーブルにメイン口座作成
-        String accountNumber = accountRepository.createMainAccountForUser(userId);
+        String accountNumber = accountRepository.createMainAccountForUser(userId).getAccountNumber();
 
-        // ③ 結果返す
         RegisterResponse res = new RegisterResponse();
         res.setUsername(username);
         res.setAccountNumber(accountNumber);
@@ -58,7 +54,9 @@ public class AuthService {
         return res;
     }
 
+
 }
+
 
 
 

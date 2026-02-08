@@ -1,13 +1,43 @@
+sudo apt update
+sudo apt install -y postgresql postgresql-contrib
+=========================================
+sudo systemctl status postgresql
+active (running) になっていればOK。
+=========================================
+起動していなければ：
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+psql --version
+=========================================
+
+sudo vi /etc/postgresql/16/main/postgresql.conf
+listen_addresses = '*'
+port = 5432
+
+psql -c "SHOW hba_file;"
+sudo vim /etc/postgresql/16/main/pg_hba.conf
+
+# TEMP: allow any (DO NOT USE IN PROD)
+host    all     all     0.0.0.0/0     scram-sha-256
+host    all     all     ::/0          scram-sha-256
+host  bank_app  bank_user  10.0.2.2/32  scram-sha-256
+sudo systemctl restart postgresql
+
+=========================================
+sudo -i -u postgres
+psql
+=========================================
 -- 1) アプリ用ユーザー作成（パスワードは任意に変更）
 CREATE USER bank_user WITH PASSWORD 'bank_pass';
-
 -- 2) DB作成（オーナーをアプリユーザーに）
 CREATE DATABASE bank_app OWNER bank_user;
-
+\q
+=========================================
+psql -h 127.0.0.1 -U bank_user -d bank_app
+=========================================
 -- 3) 権限（基本はオーナーなので不要だが明示）
 GRANT ALL PRIVILEGES ON DATABASE bank_app TO bank_user;
--- psqlなら：
--- \c bank_app bank_user
+=========================================
 BEGIN;
 
 -- users（テスト用：平文パスワード）
@@ -61,20 +91,6 @@ CREATE INDEX IF NOT EXISTS idx_tx_desc_gin
   ON transactions USING GIN (to_tsvector('simple', coalesce(description,'')));
 
 COMMIT;
-INSERT INTO users (username, password, email)
-VALUES ('admin', 'adminpass', 'admin@example.com')
-RETURNING id;
-
--- 返ってきた id を使って accounts を作る（例では user_id=1 と仮定）
-INSERT INTO accounts (user_id, branch_code, account_number, balance)
-VALUES (1, '001', '1234567', 100000)
-RETURNING id;
--- 例では account_id=1 と仮定
-INSERT INTO transactions
-(account_id, type, amount, balance_after, description, related_branch_code, related_account_number)
-VALUES
-(1, 'WITHDRAWAL', 5000, 95000, 'コンビニATM', NULL, NULL),
-(1, 'TRANSFER_OUT', 12000, 83000, '振込', '002', '7654321');
 CREATE TABLE IF NOT EXISTS address_change_requests (
   id              BIGSERIAL PRIMARY KEY,
 
@@ -105,5 +121,77 @@ CREATE TABLE IF NOT EXISTS user_profile (
   phone          VARCHAR(32) NOT NULL,
   postal_code    VARCHAR(16),
   address        TEXT NOT NULL,
-  my_number      VARCHAR(32)  -- テスト用（本来は平文NG）
+  my_number      VARCHAR(32)  
 );
+
+
+=========================================
+csvがあるフォルダを開く
+別タブで
+scp *.csv user@localhost:/tmp/pos
+ssh user@localhost
+cd /tmp/pos
+ls -l /tmp/pos
+sudo chown -R postgres:postgres /tmp/pos
+sudo chmod 755 /tmp/pos
+sudo chmod 644 /tmp/pos/*.csv
+=========================================
+sudo -i -u postgres
+psql -h 127.0.0.1 -U bank_user -d bank_app
+
+=========================================
+TRUNCATE TABLE transactions RESTART IDENTITY CASCADE;
+TRUNCATE TABLE address_change_requests RESTART IDENTITY CASCADE;
+TRUNCATE TABLE accounts RESTART IDENTITY CASCADE;
+TRUNCATE TABLE user_profile RESTART IDENTITY CASCADE;
+TRUNCATE TABLE users RESTART IDENTITY CASCADE;
+=========================================
+\copy users (id, username, password, email, created_at)
+FROM '/tmp/pos/users.csv'
+WITH (FORMAT csv, HEADER true);
+=========================================
+\copy user_profile
+(user_id, name_kanji, name_kana, birth_date, gender, phone, postal_code, address, my_number)
+FROM '/tmp/pos/user_profile.csv'
+WITH (FORMAT csv, HEADER true);
+=========================================
+\copy accounts
+(id, user_id, branch_code, account_number, balance, opened_at)
+FROM '/tmp/pos/accounts.csv'
+WITH (FORMAT csv, HEADER true);
+=========================================
+\copy transactions
+(account_id, type, amount, balance_after, description, related_branch_code, related_account_number, created_at)
+FROM '/tmp/pos/transactions.csv'
+WITH (FORMAT csv, HEADER true);
+=========================================
+\copy address_change_requests
+(user_id, postal_code, prefecture, city, address_line1, address_line2,
+ proof_file_path, proof_file_data, status, created_at)
+FROM '/tmp/pos/address_change_requests.csv'
+WITH (FORMAT csv, HEADER true);
+=========================================
+SELECT setval(pg_get_serial_sequence('users', 'id'),
+              (SELECT MAX(id) FROM users));
+
+SELECT setval(pg_get_serial_sequence('accounts', 'id'),
+              (SELECT MAX(id) FROM accounts));
+
+SELECT setval(pg_get_serial_sequence('transactions', 'id'),
+              (SELECT MAX(id) FROM transactions));
+
+SELECT setval(pg_get_serial_sequence('address_change_requests', 'id'),
+              (SELECT MAX(id) FROM address_change_requests));
+=========================================
+SELECT COUNT(*) FROM users;
+SELECT COUNT(*) FROM user_profile;
+SELECT COUNT(*) FROM accounts;
+SELECT COUNT(*) FROM transactions;
+SELECT COUNT(*) FROM address_change_requests;
+=========================================
+SELECT u.id, u.username, a.branch_code, a.account_number, a.balance
+FROM users u
+JOIN accounts a ON a.user_id = u.id
+WHERE u.username = 'admin';
+=========================================
+

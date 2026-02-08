@@ -26,6 +26,8 @@ public class SecurityConfig {
         .antMatchers("/api/auth/**").permitAll()
         .antMatchers("/api/accounts/**").permitAll()
         .antMatchers("/v3/api-docs/**").permitAll()
+        .antMatchers("/api/user/profile/**").permitAll()
+        .antMatchers("/api/onboarding/**").permitAll()
         .antMatchers("/swagger-ui/**").permitAll()
         .antMatchers("/swagger-ui.html").permitAll()
         .anyRequest().permitAll()

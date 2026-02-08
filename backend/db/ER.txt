@@ -1,36 +1,60 @@
-┌──────────────────────────┐
-│          users           │
-│--------------------------│
-│ PK id (bigserial)        │
-│ UQ username              │  ← userId
-│ password (plaintext)     │  ← テスト限定
-│ email (optional)         │
-│ created_at               │
-└───────────┬──────────────┘
-            │ 1:1 （1ユーザー1口座）
-            │
-┌───────────┴──────────────┐
-│         accounts         │
-│--------------------------│
-│ PK id (bigserial)        │
-│ UQ user_id  -> users.id  │  ← UNIQUEで1:1固定
-│ branch_code              │
-│ account_number           │
-│ balance                  │  ← 口座の現在残高（簡易）
-│ opened_at                │
-└───────────┬──────────────┘
-            │ 1:N
-            │
-┌───────────┴────────────────────────────────────────────┐
-│                       transactions                       │
-│----------------------------------------------------------│
-│ PK id (bigserial)                                         │
-│ FK account_id -> accounts.id                               │
-│ type (DEPOSIT/WITHDRAW/TRANSFER_IN/TRANSFER_OUT/...)       │
-│ amount                                                     │
-│ balance_after                                              │
-│ description                                                │
-│ related_branch_code (opt)                                  │
-│ related_account_number (opt)  ← relatedAccountNumber検索用  │
-│ created_at                                                 │
-└──────────────────────────────────────────────────────────┘
+erDiagram
+    users {
+        bigint id PK
+        varchar username
+        text password
+        varchar email
+        timestamptz created_at
+    }
+
+    user_profile {
+        bigint user_id PK, FK
+        varchar name_kanji
+        varchar name_kana
+        date birth_date
+        varchar gender
+        varchar phone
+        varchar postal_code
+        text address
+        varchar my_number
+    }
+
+    accounts {
+        bigint id PK
+        bigint user_id FK
+        varchar branch_code
+        varchar account_number
+        bigint balance
+        timestamptz opened_at
+    }
+
+    transactions {
+        bigint id PK
+        bigint account_id FK
+        varchar type
+        bigint amount
+        bigint balance_after
+        text description
+        varchar related_branch_code
+        varchar related_account_number
+        timestamptz created_at
+    }
+
+    address_change_requests {
+        bigint id PK
+        bigint user_id FK
+        varchar postal_code
+        varchar prefecture
+        varchar city
+        varchar address_line1
+        varchar address_line2
+        text proof_file_path
+        bytea proof_file_data
+        varchar status
+        timestamptz created_at
+    }
+
+    users ||--|| user_profile : "has"
+    users ||--|| accounts : "owns"
+    accounts ||--o{ transactions : "records"
+    users ||--o{ address_change_requests : "requests"

@@ -1,4 +1,4 @@
-package com.example.ebank.auth.repository.jdbc;
+﻿package com.example.ebank.auth.repository.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,7 +23,7 @@ public class UserRepositoryJdbc {
         this.jdbc = jdbc;
     }
 
-    // SQLi 実習用
+    // SQLi 螳溽ｿ堤畑
     public List<User> findByUsernameAndPasswordVuln(String username, String password) {
 
         String sql =
@@ -44,9 +44,9 @@ public class UserRepositoryJdbc {
         return u;
     }
 
-    public int insertUser(String username, String password) {
-        String sql = "INSERT INTO users (username, password) VALUES (?, ?) RETURNING id";
-        return jdbc.queryForObject(sql, Integer.class, username, password);
+    public int insertUser(String username, String password, String email) {
+        String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?) RETURNING id";
+        return jdbc.queryForObject(sql, Integer.class, username, password, email);
     }
 
     public List<User> findByUsername(String username) {
@@ -59,10 +59,11 @@ public class UserRepositoryJdbc {
         return count != null && count > 0;
     }
 
-    // ★ ユーザ作成して新しい ID を返す（パスワードはデモ用で平文のまま）
-    public Long createUser(String username, String password) {
-        String sql = "INSERT INTO users (username, password) VALUES (?, ?) RETURNING id";
-        return jdbc.queryForObject(sql, Long.class, username, password);
+    // 笘・繝ｦ繝ｼ繧ｶ菴懈・縺励※譁ｰ縺励＞ ID 繧定ｿ斐☆・医ヱ繧ｹ繝ｯ繝ｼ繝峨・繝・Δ逕ｨ縺ｧ蟷ｳ譁・・縺ｾ縺ｾ・・
+    public Long createUser(String username, String password, String email) {
+        String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?) RETURNING id";
+        return jdbc.queryForObject(sql, Long.class, username, password, email);
     }
 
 }
+

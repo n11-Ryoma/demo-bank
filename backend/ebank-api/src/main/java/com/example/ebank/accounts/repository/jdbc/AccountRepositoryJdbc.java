@@ -30,6 +30,7 @@ public class AccountRepositoryJdbc {
         Account a = new Account();
         a.setId(rs.getLong("id"));
         a.setUserId(rs.getLong("user_id"));
+        a.setBranchCode(rs.getString("branch_code"));
         a.setAccountNumber(rs.getString("account_number"));
         a.setBalance(rs.getLong("balance"));
         // a.setIsMain(true); // フィールドが残ってるなら固定でtrueにしてもOK
@@ -41,7 +42,7 @@ public class AccountRepositoryJdbc {
 
     public Optional<Account> findMainByUsername(String username) {
         String sql = 
-        	    "SELECT a.id, a.user_id, a.account_number, a.balance " +
+        	    "SELECT a.id, a.user_id, a.branch_code, a.account_number, a.balance " +
         	    "FROM accounts a " +
         	    "JOIN users u ON a.user_id = u.id " +
         	    "WHERE u.username = '" + username + "'";
@@ -52,7 +53,7 @@ public class AccountRepositoryJdbc {
 
     public Optional<Account> findByAccountNumber(String accountNumber) {
     		String sql = """
-    		    SELECT id, user_id, account_number, balance
+    		    SELECT id, user_id, branch_code, account_number, balance
     		    FROM accounts
     		    WHERE account_number = '""" + accountNumber + "'";
 
@@ -157,19 +158,18 @@ public class AccountRepositoryJdbc {
 
         }
     // ユーザ用の口座を1つ自動作成して、口座番号を返す
-    public String createMainAccountForUser(Long userId) {
+    public Account createMainAccountForUser(Long userId) {
 
         String branchCode = "0001"; // テスト用固定
         String accountNumber = String.format("%07d", userId);
 
-        String sql =
-            "INSERT INTO accounts (user_id, branch_code, account_number, balance) VALUES (" +
-            userId + ", '" +
-            branchCode + "', '" +
-            accountNumber + "', 0)";
+        String sql = """
+            INSERT INTO accounts (user_id, branch_code, account_number, balance)
+            VALUES (?, ?, ?, 0)
+            RETURNING id, user_id, branch_code, account_number, balance
+            """;
 
-        jdbc.update(sql);
-        return accountNumber;
+        return jdbc.queryForObject(sql, accountRowMapper, userId, branchCode, accountNumber);
     }
 
 }

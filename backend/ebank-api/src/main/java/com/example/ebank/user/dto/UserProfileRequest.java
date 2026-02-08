@@ -22,6 +22,9 @@ public class UserProfileRequest {
 
     // マイナンバー（デモ用）
     private String myNumber;
+    
+    
+    
 
     // --- getter / setter ---
 
