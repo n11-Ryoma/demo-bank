@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
     <div class="card shadow-sm" style="max-width: 640px; width: 100%;">
         <div class="card-header text-center bg-primary text-white">
-            <h4 class="my-2">eBank 口座開設</h4>
+            <h4 class="my-2">+Acts Bank 口座開設</h4>
         </div>
         <div class="card-body">
             <?php if ($error): ?>

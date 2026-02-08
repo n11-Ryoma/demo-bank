@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once 'config.php';
 
 if (!isset($_SESSION['jwt_token'])) {
@@ -31,7 +31,9 @@ try {
                 ?? json_encode($res['body'], JSON_UNESCAPED_UNICODE);
         }
         $status = $res['status'] ?? 'unknown';
-        $error = 'APIエラー (' . $status . '): ' . ($apiError ?: '取引履歴の取得に失敗しました、E');
+        $rawBody = is_string($res['raw'] ?? null) ? trim($res['raw']) : '';
+        $errorDetail = $rawBody !== '' ? $rawBody : ($apiError ?: '取引履歴の取得に失敗しました。');
+        $error = 'APIエラー (' . $status . '): ' . $errorDetail;
     }
 } catch (Exception $e) {
     $error = '通信エラー: ' . $e->getMessage();
@@ -73,11 +75,9 @@ $username = $_SESSION['username'] ?? '';
                        value="<?= htmlspecialchars($findStr, ENT_QUOTES, 'UTF-8') ?>">
                 <button type="submit" class="btn btn-sm btn-outline-primary ms-2">検索</button>
             </form>
-            <!-- ☁E明細プレビュー�E�E�E�Ereview.php を�E然に呼ぶ�E�E�E�E-->
             <a href="preview.php?tpl=statement.php" class="btn btn-sm btn-outline-primary">
                 明細プレビュー
             </a>
-            <!-- 既存�E CSV ダウンローチE-->
             <a href="transactions_export.php" class="btn btn-sm btn-outline-secondary">
                 CSVダウンロード
             </a>
@@ -87,7 +87,7 @@ $username = $_SESSION['username'] ?? '';
     <?php if ($error): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
     <?php elseif (empty($items)): ?>
-        <div class="alert alert-info">取引履歴はありません、E</div>
+        <div class="alert alert-info">取引履歴はありません。</div>
     <?php else: ?>
         <div class="card shadow-sm">
             <div class="card-body p-0">
@@ -95,7 +95,7 @@ $username = $_SESSION['username'] ?? '';
                     <table class="table table-striped mb-0 align-middle">
                         <thead class="table-light">
                         <tr>
-                            <th scope="col">日晁E</th>
+                            <th scope="col">日時</th>
                             <th scope="col">口座番号</th>
                             <th scope="col">種別</th>
                             <th scope="col" class="text-end">金額</th>

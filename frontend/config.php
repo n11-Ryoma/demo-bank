@@ -3,7 +3,8 @@
 
 session_start();
 
-define('API_BASE_URL', 'http://localhost:8080'); // Spring BootのURL
+//define('API_BASE_URL', 'http://localhost:8080'); // Spring BootのURL
+define('API_BASE_URL', 'http://192.168.1.76:8080');
 
 function api_request($method, $path, $body = null, $needAuth = false)
 {
