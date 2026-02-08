@@ -3,12 +3,15 @@ package com.example.ebank.accounts.repository.jdbc;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.example.ebank.accounts.dto.TransactionHistoryItem;
 import com.example.ebank.accounts.entity.Account;
+import com.example.ebank.auth.repository.jdbc.UserRepositoryJdbc;
 import com.example.ebank.model.TransactionType;
 
 //com.example.eshop.accounts.repository.jdbc.AccountRepositoryJdbc
@@ -16,7 +19,8 @@ import com.example.ebank.model.TransactionType;
 public class AccountRepositoryJdbc {
 
     private final JdbcTemplate jdbc;
-
+    private static final Logger log =
+            LogManager.getLogger(UserRepositoryJdbc.class);
     public AccountRepositoryJdbc(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
@@ -101,10 +105,11 @@ public class AccountRepositoryJdbc {
 	    	        "FROM transactions t " +
 	    	        "JOIN accounts a ON t.account_id = a.id " +
 	    	        "JOIN users u ON a.user_id = u.id " +
-	    	        "WHERE u.username = '" + username + "' " +     
+	    	        "WHERE u.username = '" + username + "'" +
 	    	        "ORDER BY t.created_at DESC, t.id DESC " +     
 	    	        "LIMIT " + limit + " " +                       
-	    	        "OFFSET " + offset;                            
+	    	        "OFFSET " + offset;      
+	    	log.info("### Executing SQL:",sql);
         return jdbc.query(sql, (rs, rowNum) -> {
             TransactionHistoryItem item = new TransactionHistoryItem();
             item.setAccountNumber(rs.getString("account_number"));

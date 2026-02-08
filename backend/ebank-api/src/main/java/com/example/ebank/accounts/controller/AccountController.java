@@ -71,7 +71,8 @@ public class AccountController {
     public List<TransactionHistoryItem> getHistory(
             @RequestHeader("Authorization") String authHeader,
             @RequestParam(defaultValue = "20") int limit,
-            @RequestParam(defaultValue = "0") int offset) {
+            @RequestParam(defaultValue = "0") int offset
+    			) {
         String token = authHeader.replace("Bearer ", "").trim();
         String username = jwtUtil.extractUsername(token);
         return accountService.getMyHistory(username, limit, offset);
