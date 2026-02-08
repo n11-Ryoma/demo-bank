@@ -1,12 +1,14 @@
 package com.example.ebank.accounts.entity;
 
-//com.example.eshop.accounts.entity.Account
 public class Account {
+
     private Long id;
     private Long userId;
+    private String branchCode;      // ★ 追加
     private String accountNumber;
     private Long balance;
-    private Boolean isMain; 
+
+    // --- getters / setters ---
 
     public Long getId() {
         return id;
@@ -22,6 +24,13 @@ public class Account {
         this.userId = userId;
     }
 
+    public String getBranchCode() {
+        return branchCode;
+    }
+    public void setBranchCode(String branchCode) {
+        this.branchCode = branchCode;
+    }
+
     public String getAccountNumber() {
         return accountNumber;
     }
@@ -35,12 +44,4 @@ public class Account {
     public void setBalance(Long balance) {
         this.balance = balance;
     }
-
-    public Boolean getIsMain() {
-        return isMain;
-    }
-    public void setIsMain(Boolean isMain) {
-        this.isMain = isMain;
-    }
 }
-

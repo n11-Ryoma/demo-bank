@@ -1,122 +1,109 @@
-CREATE DATABASE ebank;
+-- 1) アプリ用ユーザー作成（パスワードは任意に変更）
+CREATE USER bank_user WITH PASSWORD 'bank_pass';
 
+-- 2) DB作成（オーナーをアプリユーザーに）
+CREATE DATABASE bank_app OWNER bank_user;
 
-\c ebank;
+-- 3) 権限（基本はオーナーなので不要だが明示）
+GRANT ALL PRIVILEGES ON DATABASE bank_app TO bank_user;
+-- psqlなら：
+-- \c bank_app bank_user
+BEGIN;
 
--- ユーザ（認証情報）
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL
+-- users（テスト用：平文パスワード）
+CREATE TABLE IF NOT EXISTS users (
+  id           BIGSERIAL PRIMARY KEY,
+  username     VARCHAR(64) NOT NULL UNIQUE,
+  password     TEXT NOT NULL,                 -- テスト限定（平文）
+  email        VARCHAR(254),
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- ロール（権限）
-CREATE TABLE roles (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+-- accounts（1ユーザー1口座：user_id UNIQUE）
+CREATE TABLE IF NOT EXISTS accounts (
+  id             BIGSERIAL PRIMARY KEY,
+  user_id        BIGINT NOT NULL UNIQUE REFERENCES users(id) ON DELETE RESTRICT,
+  branch_code    VARCHAR(8) NOT NULL,
+  account_number VARCHAR(16) NOT NULL,
+  balance        BIGINT NOT NULL DEFAULT 0,     -- JPY想定
+  opened_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (branch_code, account_number)
 );
 
--- ユーザ ↔ ロール
-CREATE TABLE user_roles (
-    user_id INTEGER REFERENCES users(id),
-    role_id INTEGER REFERENCES roles(id)
+CREATE INDEX IF NOT EXISTS idx_accounts_user_id ON accounts(user_id);
+
+-- transactions
+CREATE TABLE IF NOT EXISTS transactions (
+  id                    BIGSERIAL PRIMARY KEY,
+  account_id             BIGINT NOT NULL REFERENCES accounts(id) ON DELETE RESTRICT,
+
+  type                  VARCHAR(16) NOT NULL,  -- 'DEPOSIT','WITHDRAWAL','TRANSFER_IN','TRANSFER_OUT',...
+  amount                BIGINT NOT NULL CHECK (amount >= 0),
+  balance_after         BIGINT NOT NULL,
+
+  description           TEXT,
+  related_branch_code    VARCHAR(8),
+  related_account_number VARCHAR(16),
+
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- 銀行口座
-CREATE TABLE accounts (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
-    account_number VARCHAR(255) UNIQUE NOT NULL,
-    balance BIGINT NOT NULL DEFAULT 0
-);
+-- 一覧表示・ページング用
+CREATE INDEX IF NOT EXISTS idx_tx_account_created
+  ON transactions(account_id, created_at DESC, id DESC);
 
--- 取引履歴（送金や入出金）
-CREATE TABLE transactions (
-    id SERIAL PRIMARY KEY,
-    account_id INTEGER REFERENCES accounts(id),
-    amount BIGINT NOT NULL,
-    type VARCHAR(50) NOT NULL, -- "DEPOSIT", "WITHDRAW", "TRANSFER"
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- relatedAccountNumber検索用
+CREATE INDEX IF NOT EXISTS idx_tx_related_accnum
+  ON transactions(related_account_number);
 
+-- description検索（簡易）
+CREATE INDEX IF NOT EXISTS idx_tx_desc_gin
+  ON transactions USING GIN (to_tsvector('simple', coalesce(description,'')));
 
--- 管理者ロール / 一般ロール
-INSERT INTO roles (name) VALUES ('ADMIN'), ('USER');
+COMMIT;
+INSERT INTO users (username, password, email)
+VALUES ('admin', 'adminpass', 'admin@example.com')
+RETURNING id;
 
--- デフォルトユーザ（ハッキング用）
-INSERT INTO users (username, password)
-VALUES 
-    ('admin', 'password123'), 
-    ('taro',  'password123'),
-    ('hanako','password123');
-
--- ログインユーザのロール割当
-INSERT INTO user_roles (user_id, role_id) VALUES
-    (1, 1), -- admin は ADMIN
-    (2, 2), -- taro は USER
-    (3, 2); -- hanako は USER
-
--- taro の口座
-INSERT INTO accounts (user_id, account_number, balance)
-VALUES (2, '0001-0000001', 500000);
-
--- hanako の口座
-INSERT INTO accounts (user_id, account_number, balance)
-VALUES (3, '0001-0000002', 120000);
-
--- admin の「見えるだけ」用口座（残高は0でOK）
-INSERT INTO accounts (user_id, account_number, balance)
-VALUES (1, '9999-9999999', 0);
-
--- 初期トランザクション（適当）
-INSERT INTO transactions (account_id, amount, type)
+-- 返ってきた id を使って accounts を作る（例では user_id=1 と仮定）
+INSERT INTO accounts (user_id, branch_code, account_number, balance)
+VALUES (1, '001', '1234567', 100000)
+RETURNING id;
+-- 例では account_id=1 と仮定
+INSERT INTO transactions
+(account_id, type, amount, balance_after, description, related_branch_code, related_account_number)
 VALUES
-    (1, 500000, 'DEPOSIT'),
-    (2, 120000, 'DEPOSIT');
+(1, 'WITHDRAWAL', 5000, 95000, 'コンビニATM', NULL, NULL),
+(1, 'TRANSFER_OUT', 12000, 83000, '振込', '002', '7654321');
+CREATE TABLE IF NOT EXISTS address_change_requests (
+  id              BIGSERIAL PRIMARY KEY,
 
+  user_id         BIGINT NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
 
--- accounts テーブル作成
-CREATE TABLE accounts (
-    id              BIGSERIAL PRIMARY KEY,          -- 口座レコードID
-    user_id         BIGINT NOT NULL,                -- users.id へのFK
-    account_number  VARCHAR(20) NOT NULL,           -- 口座番号 (例: 0001-0000001)
-    balance         BIGINT NOT NULL DEFAULT 0,      -- 残高（円）
-    is_main         BOOLEAN NOT NULL DEFAULT FALSE, -- メイン口座フラグ
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  postal_code     VARCHAR(16)  NOT NULL,
+  prefecture      VARCHAR(64)  NOT NULL,
+  city            VARCHAR(128) NOT NULL,
+  address_line1   VARCHAR(255) NOT NULL,
+  address_line2   VARCHAR(255),
+
+  proof_file_path TEXT,
+  proof_file_data BYTEA,                 -- byte[] に対応
+
+  status          VARCHAR(16) NOT NULL,  -- 'PENDING' など
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
--- users テーブルへの外部キー制約
-ALTER TABLE accounts
-  ADD CONSTRAINT fk_accounts_user
-  FOREIGN KEY (user_id)
-  REFERENCES users (id)
-  ON DELETE CASCADE;
-
--- 口座番号はユニークにしておく
-CREATE UNIQUE INDEX ux_accounts_account_number
-  ON accounts (account_number);
-
--- 「ユーザごとにメイン口座は1つまで」にしたい場合の部分ユニークインデックス
-CREATE UNIQUE INDEX ux_accounts_user_main
-  ON accounts (user_id)
-  WHERE is_main = TRUE;
-
-
-INSERT INTO accounts (user_id, account_number, balance, is_main)
-VALUES
-  (1, '0001-0000001', 150000, TRUE),   -- ユーザ1のメイン口座
-  (1, '0001-0000002',  50000, FALSE),  -- ユーザ1のサブ口座
-  (2, '0002-0000001', 230000, TRUE);   -- ユーザ2のメイン口座
-
-CREATE TABLE transactions (
-    id BIGSERIAL PRIMARY KEY,
-    account_id      BIGINT NOT NULL,              -- この口座視点の取引
-    type            VARCHAR(20) NOT NULL,        -- DEPOSIT / WITHDRAW / TRANSFER_IN / TRANSFER_OUT
-    amount          BIGINT NOT NULL,             -- 絶対値（金額）。マイナスにはしない設計
-    balance_after   BIGINT NOT NULL,             -- この取引後の残高（将来の履歴表示用）
-    related_account_number VARCHAR(50),          -- 振込相手など
-    description     VARCHAR(255),                -- メモ（ATM入金 etc）
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+-- 最新1件取得を速くする（findLatest...に効く）
+CREATE INDEX IF NOT EXISTS idx_addr_req_user_created
+  ON address_change_requests(user_id, created_at DESC);
+CREATE TABLE IF NOT EXISTS user_profile (
+  user_id        BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  name_kanji     VARCHAR(128) NOT NULL,
+  name_kana      VARCHAR(128),
+  birth_date     DATE NOT NULL,
+  gender         VARCHAR(16),
+  phone          VARCHAR(32) NOT NULL,
+  postal_code    VARCHAR(16),
+  address        TEXT NOT NULL,
+  my_number      VARCHAR(32)  -- テスト用（本来は平文NG）
 );
-

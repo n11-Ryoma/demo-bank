@@ -1,9 +1,7 @@
 package com.example.ebank.auth.security;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -11,8 +9,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.example.ebank.auth.jwt.JwtUtil;
@@ -48,23 +46,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String token = authHeader.substring(7);
 
     try {
+      // 署名＆expチェック（JwtUtil側のvalidateでもOK）
+      if (!jwtUtil.validateToken(token)) {
+        sec.emit(
+            "AUTH_TOKEN_INVALID",
+            "LOW",
+            "anonymous",
+            request.getRemoteAddr(),
+            Map.of("path", request.getRequestURI())
+        );
+        filterChain.doFilter(request, response);
+        return;
+      }
+
       String username = jwtUtil.extractUsername(token);
-      List<String> roles = jwtUtil.extractRoles(token);
+      Long userId = jwtUtil.extractUserId(token);
 
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-        List<SimpleGrantedAuthority> authorities = roles.stream()
-            .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
-            .collect(Collectors.toList());
-
+        // principal は username のまま（既存コードが getName() 前提でも壊れにくい）
+        // credentials は null
+        // authorities は空（role無し）
         UsernamePasswordAuthenticationToken authToken =
-            new UsernamePasswordAuthenticationToken(username, null, authorities);
+            new UsernamePasswordAuthenticationToken(username, null, java.util.Collections.emptyList());
+
+        // details に userId を載せておく（後で取り出せる）
+        // 既存の details を壊さないよう、Mapでまとめて格納
+        var details = new WebAuthenticationDetailsSource().buildDetails(request);
+        authToken.setDetails(Map.of(
+            "web", details,
+            "userId", userId
+        ));
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
       }
 
     } catch (ExpiredJwtException e) {
-      // 期限切れは「検知ログ」に出す（Blueがルール化しやすい）
       sec.emit(
           "AUTH_TOKEN_EXPIRED",
           "LOW",
@@ -73,7 +90,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           Map.of("path", request.getRequestURI())
       );
     } catch (Exception e) {
-      // 不正トークンも検知ログへ
       sec.emit(
           "AUTH_TOKEN_INVALID",
           "LOW",

@@ -35,7 +35,7 @@ public class UserRepositoryJdbc {
 
         return jdbc.query(sql, this::mapRow);
     }
-
+    
     private User mapRow(ResultSet rs, int rowNum) throws SQLException {
         User u = new User();
         u.setId(rs.getLong("id"));

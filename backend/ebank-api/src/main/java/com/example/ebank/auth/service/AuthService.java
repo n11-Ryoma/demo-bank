@@ -10,23 +10,19 @@ import com.example.ebank.auth.dto.RegisterRequest;
 import com.example.ebank.auth.dto.RegisterResponse;
 import com.example.ebank.auth.entity.User;
 import com.example.ebank.auth.jwt.JwtUtil;
-import com.example.ebank.auth.repository.jdbc.RoleRepositoryJdbc;
 import com.example.ebank.auth.repository.jdbc.UserRepositoryJdbc;
 
 @Service
 public class AuthService {
 
     private final UserRepositoryJdbc userRepository;
-    private final RoleRepositoryJdbc roleRepository;
     private final JwtUtil jwtUtil;
     private final AccountRepositoryJdbc accountRepository;
 
     public AuthService(UserRepositoryJdbc userRepository,
-                       RoleRepositoryJdbc roleRepository,
                        JwtUtil jwtUtil,
                        AccountRepositoryJdbc accountRepository) {
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
         this.jwtUtil = jwtUtil;
         this.accountRepository = accountRepository;
     }

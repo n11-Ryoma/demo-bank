@@ -2,7 +2,9 @@ package com.example.ebank.model;
 
 public enum TransactionType {
     DEPOSIT,
-    WITHDRAW,
+    WITHDRAWAL,
     TRANSFER_IN,
-    TRANSFER_OUT
+    TRANSFER_OUT,
+    FEE,
+    ADJUSTMENT
 }

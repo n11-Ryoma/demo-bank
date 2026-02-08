@@ -1,6 +1,5 @@
 package com.example.ebank.auth.controller;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -120,7 +119,7 @@ public class AuthController {
     User user = users.get(0);
 
     // JWT 発行
-    String token = jwtUtil.generateToken(user.getId(), user.getUsername(), Collections.emptyList());
+    String token = jwtUtil.generateToken(user.getId(), user.getUsername());
 
     long latencyMs = (System.nanoTime() - start) / 1_000_000;
     audit.success(

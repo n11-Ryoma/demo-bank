@@ -83,7 +83,7 @@ public class AccountService {
 
         accountRepository.insertTransaction(
                 acc.getId(),
-                TransactionType.WITHDRAW,
+                TransactionType.WITHDRAWAL,
                 req.getAmount(),
                 newBalance,
                 null,

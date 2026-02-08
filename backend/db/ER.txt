@@ -1,0 +1,36 @@
+┌──────────────────────────┐
+│          users           │
+│--------------------------│
+│ PK id (bigserial)        │
+│ UQ username              │  ← userId
+│ password (plaintext)     │  ← テスト限定
+│ email (optional)         │
+│ created_at               │
+└───────────┬──────────────┘
+            │ 1:1 （1ユーザー1口座）
+            │
+┌───────────┴──────────────┐
+│         accounts         │
+│--------------------------│
+│ PK id (bigserial)        │
+│ UQ user_id  -> users.id  │  ← UNIQUEで1:1固定
+│ branch_code              │
+│ account_number           │
+│ balance                  │  ← 口座の現在残高（簡易）
+│ opened_at                │
+└───────────┬──────────────┘
+            │ 1:N
+            │
+┌───────────┴────────────────────────────────────────────┐
+│                       transactions                       │
+│----------------------------------------------------------│
+│ PK id (bigserial)                                         │
+│ FK account_id -> accounts.id                               │
+│ type (DEPOSIT/WITHDRAW/TRANSFER_IN/TRANSFER_OUT/...)       │
+│ amount                                                     │
+│ balance_after                                              │
+│ description                                                │
+│ related_branch_code (opt)                                  │
+│ related_account_number (opt)  ← relatedAccountNumber検索用  │
+│ created_at                                                 │
+└──────────────────────────────────────────────────────────┘

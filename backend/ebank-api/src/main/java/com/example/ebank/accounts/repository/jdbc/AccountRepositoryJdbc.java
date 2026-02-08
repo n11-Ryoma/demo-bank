@@ -32,29 +32,30 @@ public class AccountRepositoryJdbc {
         a.setUserId(rs.getLong("user_id"));
         a.setAccountNumber(rs.getString("account_number"));
         a.setBalance(rs.getLong("balance"));
-        a.setIsMain(rs.getBoolean("is_main"));
+        // a.setIsMain(true); // フィールドが残ってるなら固定でtrueにしてもOK
         return a;
     };
+
 
     // ── 口座取得系 ─────────────────
 
     public Optional<Account> findMainByUsername(String username) {
-        String sql = """
-            SELECT a.id, a.user_id, a.account_number, a.balance, a.is_main
-            FROM accounts a
-            JOIN users u ON a.user_id = u.id
-            WHERE u.username = '"""+username+"'"+
-            "AND a.is_main = TRUE LIMIT 1";
+        String sql = 
+        	    "SELECT a.id, a.user_id, a.account_number, a.balance " +
+        	    "FROM accounts a " +
+        	    "JOIN users u ON a.user_id = u.id " +
+        	    "WHERE u.username = '" + username + "'";
         //var list = jdbc.query(sql, accountRowMapper, username);
         var list = jdbc.query(sql, accountRowMapper);
         return list.stream().findFirst();
     }
 
     public Optional<Account> findByAccountNumber(String accountNumber) {
-        String sql = """
-            SELECT id, user_id, account_number, balance, is_main
-            FROM accounts
-            WHERE account_number = '"""+accountNumber+"'";
+    		String sql = """
+    		    SELECT id, user_id, account_number, balance
+    		    FROM accounts
+    		    WHERE account_number = '""" + accountNumber + "'";
+
         
         //var list = jdbc.query(sql, accountRowMapper, accountNumber);
         var list = jdbc.query(sql, accountRowMapper);
@@ -91,48 +92,55 @@ public class AccountRepositoryJdbc {
 
     // usernameに紐づく全口座の履歴（シンプル版：最近n件）
     public List<TransactionHistoryItem> findHistoryByUsername(
-            String username, int limit, int offset) {
+        String username, int limit, int offset) {
 
 	    	String sql =
-	    	        "SELECT t.account_id, " +
-	    	        "       a.account_number, " +
-	    	        "       t.type, " +
-	    	        "       t.amount, " +
-	    	        "       t.balance_after, " +
-	    	        "       t.related_account_number, " +
-	    	        "       t.description, " +
-	    	        "       t.created_at " +
-	    	        "FROM transactions t " +
-	    	        "JOIN accounts a ON t.account_id = a.id " +
-	    	        "JOIN users u ON a.user_id = u.id " +
-	    	        "WHERE u.username = '" + username + "'" +
-	    	        "ORDER BY t.created_at DESC, t.id DESC " +     
-	    	        "LIMIT " + limit + " " +                       
-	    	        "OFFSET " + offset;      
-	    	log.info("### Executing SQL:",sql);
-        return jdbc.query(sql, (rs, rowNum) -> {
-            TransactionHistoryItem item = new TransactionHistoryItem();
-            item.setAccountNumber(rs.getString("account_number"));
-            item.setType(TransactionType.valueOf(rs.getString("type")));
-            item.setAmount(rs.getLong("amount"));
-            item.setBalanceAfter(rs.getLong("balance_after"));
-            item.setRelatedAccountNumber(rs.getString("related_account_number"));
-            item.setDescription(rs.getString("description"));
-            item.setCreatedAt(rs.getObject("created_at", java.time.OffsetDateTime.class));
-            return item;
-        });
+	    		    "SELECT t.account_id, " +
+	    		    "       a.account_number, " +
+	    		    "       t.type, " +
+	    		    "       t.amount, " +
+	    		    "       t.balance_after, " +
+	    		    "       t.related_account_number, " +
+	    		    "       t.description, " +
+	    		    "       t.created_at " +
+	    		    "FROM transactions t " +
+	    		    "JOIN accounts a ON t.account_id = a.id " +
+	    		    "JOIN users u ON a.user_id = u.id " +
+	    		    "WHERE u.username = '" + username + "' " +   // ← ★スペース追加
+	    		    "ORDER BY t.created_at DESC, t.id DESC " +
+	    		    "LIMIT " + limit + " " +
+	    		    "OFFSET " + offset;
+   
+	    	log.info("### Executing SQL: {}", sql);
+	    	return jdbc.query(sql, (rs, rowNum) -> {
+	    	    TransactionHistoryItem item = new TransactionHistoryItem();
+	    	    item.setAccountNumber(rs.getString("account_number"));
+	    	    item.setType(TransactionType.valueOf(rs.getString("type")));
+	    	    item.setAmount(rs.getLong("amount"));
+	    	    item.setBalanceAfter(rs.getLong("balance_after"));
+	    	    item.setRelatedAccountNumber(rs.getString("related_account_number"));
+	    	    item.setDescription(rs.getString("description"));
+	    	    item.setCreatedAt(rs.getObject("created_at", java.time.OffsetDateTime.class)); // ここが落ちたらTimestamp版へ
+	    	    return item;
+	    	});
+
     }
-    // ★ ユーザ用のメイン口座を1つ自動作成して、口座番号を返す
+    // ユーザ用の口座を1つ自動作成して、口座番号を返す
     public String createMainAccountForUser(Long userId) {
-        // 例: ユーザIDを元に 0001-0000001 みたいな形式で採番
-        String accountNumber = String.format("%04d-%07d", userId, 1);
 
-        String sql = "INSERT INTO accounts (user_id, account_number, balance, is_main) VALUES (" + userId + ", "+accountNumber+", "+0L+", TRUE)";
+        String branchCode = "0001"; // テスト用固定
+        String accountNumber = String.format("%07d", userId);
 
-        //jdbc.update(sql, userId, accountNumber, 0L);
+        String sql =
+            "INSERT INTO accounts (user_id, branch_code, account_number, balance) VALUES (" +
+            userId + ", '" +
+            branchCode + "', '" +
+            accountNumber + "', 0)";
+
         jdbc.update(sql);
         return accountNumber;
     }
+
 }
 
 
