@@ -36,7 +36,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleGeneric(Exception ex, HttpServletRequest req) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         logByStatus(status, req, ex);
-        return ResponseEntity.status(status).body(status.getReasonPhrase());
+        String msg = ex.getMessage();
+        return ResponseEntity.status(status).body(msg == null || msg.isBlank() ? status.getReasonPhrase() : msg);
     }
 
     private void logByStatus(HttpStatus status, HttpServletRequest req, Exception ex) {
