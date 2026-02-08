@@ -22,21 +22,23 @@ public class GlobalExceptionHandler {
         HttpStatus status = ex.getStatus();
         logByStatus(status, req, ex);
         String reason = ex.getReason();
-        return ResponseEntity.status(status).body(reason == null ? status.getReasonPhrase() : reason);
+        String msg = (reason == null || reason.isBlank()) ? ex.toString() : reason;
+        return ResponseEntity.status(status).body(msg == null || msg.isBlank() ? status.getReasonPhrase() : msg);
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class})
     public ResponseEntity<String> handleBadRequest(Exception ex, HttpServletRequest req) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         logByStatus(status, req, ex);
-        return ResponseEntity.status(status).body(status.getReasonPhrase());
+        String msg = ex.toString();
+        return ResponseEntity.status(status).body(msg == null || msg.isBlank() ? status.getReasonPhrase() : msg);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGeneric(Exception ex, HttpServletRequest req) {
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         logByStatus(status, req, ex);
-        String msg = ex.getMessage();
+        String msg = ex.toString();
         return ResponseEntity.status(status).body(msg == null || msg.isBlank() ? status.getReasonPhrase() : msg);
     }
 
