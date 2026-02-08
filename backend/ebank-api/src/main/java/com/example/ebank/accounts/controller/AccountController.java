@@ -209,7 +209,7 @@ public class AccountController {
                         null,
                         null,
                         new HttpMeta("/api/accounts/transactions", "GET", 200, ip, ua == null ? "" : ua, latencyMs),
-                        Map.of("limit", limit, "offset", offset)
+                        Map.of("limit", limit, "offset", offset, "findStr", findStr)
                 );
         		return res;
         }
@@ -222,7 +222,7 @@ public class AccountController {
                         null,
                         null,
                         new HttpMeta("/api/accounts/transactions", "GET", 200, ip, ua == null ? "" : ua, latencyMs),
-                        Map.of("limit", limit, "offset", offset)
+                        Map.of("limit", limit, "offset", offset, "findStr", findStr)
                 );
         		return res;
         }

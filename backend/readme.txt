@@ -1,6 +1,7 @@
 0)git
 git clone https://github.com/n11-Ryoma/demo-bank.git
 cd demo-bank/backend/ebank-api
+vi src/main/resources/application.properties
 application.properties
 をDBのIPに書き換える。
 1) 専用ユーザ作成
@@ -18,6 +19,15 @@ java -version
 sudo apt install -y openjdk-17-jdk
 =========================================================
 本番でビルドする場合（リポジトリ直下で）:
+cd ~/demo-bank/backend/ebank-api
+chmod +x mvnw
+# BOMが付いてるJavaファイルを探す
+grep -rl $'^\xEF\xBB\xBF' src/main/java
+
+# 見つかったやつ全部からBOMを削除（GNU sed）
+grep -rl $'^\xEF\xBB\xBF' src/main/java | xargs -r sed -i '1s/^\xEF\xBB\xBF//'
+
+
 ./mvnw -DskipTests package
 生成物:
 target/eshop-api-0.0.1-SNAPSHOT.jar
@@ -27,6 +37,8 @@ sudo cp target/eshop-api-0.0.1-SNAPSHOT.jar /opt/eshop-api/app/eshop-api.jar
 sudo chown eshop:eshop /opt/eshop-api/app/eshop-api.jar
 =========================================================
 5) systemd サービス作成
+sudo nano /etc/systemd/system/eshop-api.service
+
 eshop-api.service
 
 [Unit]
