@@ -1,4 +1,4 @@
-﻿// src/main/java/com/example/ebank/auth/dto/RegisterRequest.java
+// src/main/java/com/example/ebank/auth/dto/RegisterRequest.java
 package com.example.ebank.auth.dto;
 
 import com.example.ebank.user.dto.UserProfileRequest;

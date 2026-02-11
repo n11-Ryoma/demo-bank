@@ -6,6 +6,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.ebank.accounts.dto.AccountDetailResponse;
+import com.example.ebank.accounts.dto.AccountSummaryItem;
 import com.example.ebank.accounts.dto.BalanceResponse;
 import com.example.ebank.accounts.dto.CashOperationRequest;
 import com.example.ebank.accounts.dto.TransactionHistoryItem;
@@ -20,6 +23,7 @@ import com.example.ebank.accounts.dto.TransferRequest;
 import com.example.ebank.accounts.dto.TransferResponse;
 import com.example.ebank.accounts.service.AccountService;
 import com.example.ebank.auth.jwt.JwtUtil;
+import com.example.ebank.auth.security.AuthTokenParser;
 import com.example.ebank.observability.AuditLogger;
 import com.example.ebank.observability.HttpMeta;
 
@@ -29,13 +33,16 @@ public class AccountController {
 
     private final AccountService accountService;
     private final JwtUtil jwtUtil;
+    private final AuthTokenParser authTokenParser;
     private final AuditLogger audit;
 
     public AccountController(AccountService accountService,
                              JwtUtil jwtUtil,
+                             AuthTokenParser authTokenParser,
                              AuditLogger audit) {
         this.accountService = accountService;
         this.jwtUtil = jwtUtil;
+        this.authTokenParser = authTokenParser;
         this.audit = audit;
     }
 
@@ -226,6 +233,20 @@ public class AccountController {
                 );
         		return res;
         }
+    }
+
+    @GetMapping
+    public List<AccountSummaryItem> getMyAccounts(@RequestHeader("Authorization") String authHeader) {
+        String username = authTokenParser.extractUsername(authHeader);
+        return accountService.getMyAccounts(username);
+    }
+
+    @GetMapping("/{accountId}")
+    public AccountDetailResponse getMyAccountDetail(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable long accountId) {
+        String username = authTokenParser.extractUsername(authHeader);
+        return accountService.getMyAccountDetail(username, accountId);
     }
 }
 

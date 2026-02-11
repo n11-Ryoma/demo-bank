@@ -63,6 +63,40 @@ public class AccountRepositoryJdbc {
         return list.stream().findFirst();
     }
 
+    public List<Account> findByUsername(String username) {
+        String sql = """
+            SELECT a.id, a.user_id, a.branch_code, a.account_number, a.balance
+            FROM accounts a
+            JOIN users u ON a.user_id = u.id
+            WHERE u.username = ?
+            ORDER BY a.id ASC
+            """;
+        return jdbc.query(sql, accountRowMapper, username);
+    }
+
+    public Optional<Account> findByIdAndUsername(long accountId, String username) {
+        String sql = """
+            SELECT a.id, a.user_id, a.branch_code, a.account_number, a.balance
+            FROM accounts a
+            JOIN users u ON a.user_id = u.id
+            WHERE a.id = ? AND u.username = ?
+            """;
+        var list = jdbc.query(sql, accountRowMapper, accountId, username);
+        return list.stream().findFirst();
+    }
+
+    public java.time.OffsetDateTime findOpenedAtByAccountId(long accountId) {
+        String sql = """
+            SELECT created_at
+            FROM transactions
+            WHERE account_id = ? AND type = 'OPEN'
+            ORDER BY created_at ASC
+            LIMIT 1
+            """;
+        var list = jdbc.query(sql, (rs, rowNum) -> rs.getObject("created_at", java.time.OffsetDateTime.class), accountId);
+        return list.isEmpty() ? null : list.get(0);
+    }
+
     public void updateBalance(long accountId, long newBalance) {
         String sql = "UPDATE accounts SET balance = ? WHERE id = ?";
         jdbc.update(sql, newBalance, accountId);

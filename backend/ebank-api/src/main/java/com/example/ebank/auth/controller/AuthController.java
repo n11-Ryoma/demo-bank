@@ -24,6 +24,7 @@ import com.example.ebank.auth.service.AuthService;
 import com.example.ebank.observability.AuditLogger;
 import com.example.ebank.observability.HttpMeta;
 import com.example.ebank.observability.SecurityEventLogger;
+import com.example.ebank.security.service.SecuritySessionService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -38,17 +39,20 @@ public class AuthController {
   private final AuditLogger audit;
   private final SecurityEventLogger sec;
   private final LoginFailureTracker failureTracker;
+  private final SecuritySessionService securitySessionService;
 
   public AuthController(AuthService authService,
                         JwtUtil jwtUtil,
                         AuditLogger audit,
                         SecurityEventLogger sec,
-                        LoginFailureTracker failureTracker) {
+                        LoginFailureTracker failureTracker,
+                        SecuritySessionService securitySessionService) {
     this.authService = authService;
     this.jwtUtil = jwtUtil;
     this.audit = audit;
     this.sec = sec;
     this.failureTracker = failureTracker;
+    this.securitySessionService = securitySessionService;
   }
   @PostMapping("/login")
   public AuthResponse login(@RequestBody LoginRequest request, HttpServletRequest httpReq) {
@@ -66,6 +70,8 @@ public class AuthController {
     // 失敗
     if (users.isEmpty()) {
       int cnt = failureTracker.recordFailure(key);
+      authService.findUserIdByUsername(actor)
+          .ifPresent(userId -> securitySessionService.recordLoginFailure(userId, ip, ua));
 
       // 失敗バースト検知（Blueがアラート化しやすい）
       if (cnt >= failureTracker.threshold()) {
@@ -115,6 +121,7 @@ public class AuthController {
 
     // JWT 発行
     String token = jwtUtil.generateToken(user.getId(), user.getUsername());
+    securitySessionService.recordLoginSuccess(user.getId(), token, ip, ua);
 
     long latencyMs = (System.nanoTime() - start) / 1_000_000;
     audit.success(

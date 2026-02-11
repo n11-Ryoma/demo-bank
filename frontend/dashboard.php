@@ -1,179 +1,125 @@
-<?php
-require_once 'config.php';
+﻿<?php
+require_once 'auth_common.php';
+require_login();
 
-if (!isset($_SESSION['jwt_token'])) {
-    header('Location: login.php');
-    exit;
-}
+$pageTitle = 'ダッシュボード';
+$extraStyles = <<<'CSS'
+<style>
+    .quick-card {
+        transition: transform .2s ease, box-shadow .2s ease;
+        border: 0;
+    }
 
+    .quick-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 24px rgba(18, 50, 74, .12);
+    }
+</style>
+CSS;
+
+$balanceRes = api_auth_request('GET', '/api/accounts/balance');
 $balance = null;
 $accountNumber = null;
 $error = null;
 
-try {
-    $res = api_request('GET', '/api/accounts/balance', null, true);
-    if ($res['status'] === 200) {
-        $balance       = $res['body']['balance'];
-        $accountNumber = $res['body']['accountNumber'];
-    } else {
-        $error = '残高取得に失敗しました。';
-    }
-} catch (Exception $e) {
-    $error = '通信エラー: ' . $e->getMessage();
+if (($balanceRes['status'] ?? 0) >= 200 && ($balanceRes['status'] ?? 0) < 300 && is_array($balanceRes['body'])) {
+    $balance = $balanceRes['body']['balance'] ?? null;
+    $accountNumber = $balanceRes['body']['accountNumber'] ?? null;
+} else {
+    $error = isset($balanceRes['exception'])
+        ? '通信エラー: ' . $balanceRes['exception']
+        : api_error_message($balanceRes, '残高の取得に失敗しました。');
 }
 
-$flashMessage = flash('flash_message');
-$flashError   = flash('flash_error');
+require_once 'partials/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>eBank ダッシュボード</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-
-<!-- 上部ナビバー -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-0">
-    <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center" href="dashboard.php">
-            <img src="images/logo.png" alt="eBank Logo"
-                 style="height:100px; margin-right:8px;">
-            <span class="fw-bold">+Acts Bank</span>
-        </a>
-        <div class="d-flex">
-            <span class="navbar-text me-3 text-white">
-                <?= htmlspecialchars($_SESSION['username'] ?? '', ENT_QUOTES, 'UTF-8') ?> さん
-            </span>
-            <a href="logout.php" class="btn btn-light btn-sm">ログアウト</a>
+<main class="container page-shell">
+    <div class="panel p-4 p-md-5 mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+            <div>
+                <p class="text-muted mb-1">ログインユーザー</p>
+                <h1 class="h4 fw-bold mb-2"><?= h($_SESSION['username'] ?? '') ?> さん</h1>
+                <p class="text-muted mb-0">口座番号: <?= h($accountNumber ?: '-') ?></p>
+            </div>
+            <div class="text-md-end">
+                <p class="text-muted mb-1">現在残高</p>
+                <p class="fs-3 fw-bold text-primary mb-0">
+                    <?= $balance !== null ? h(number_format((float)$balance)) . ' 円' : '-' ?>
+                </p>
+            </div>
         </div>
+        <?php if ($error): ?>
+            <div class="alert alert-warning mt-3 mb-0"><?= h($error) ?></div>
+        <?php endif; ?>
     </div>
-</nav>
 
-<div class="container-fluid">
-    <div class="row">
-
-        <!-- 左サイドメニュー -->
-        <nav class="col-md-3 col-lg-2 d-md-block bg-white border-end vh-100 p-3">
-            <h6 class="text-muted small">メニュー</h6>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link active fw-bold" href="dashboard.php">
-                        残高照会
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="transactions.php">
-                        取引明細
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="document.getElementById('transfer').scrollIntoView();">
-                        振込
-                    </a>
-                </li>
-                <!-- ★ ここを「住所変更」にする -->
-                <li class="nav-item">
-                    <a class="nav-link" href="address_change.php">
-                        住所変更
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-
-        <!-- メイン領域 -->
-        <main class="col-md-9 col-lg-10 p-4">
-
-            <?php if ($flashMessage): ?>
-                <div class="alert alert-success"><?= htmlspecialchars($flashMessage, ENT_QUOTES, 'UTF-8') ?></div>
-            <?php endif; ?>
-
-            <?php if ($flashError): ?>
-                <div class="alert alert-danger"><?= htmlspecialchars($flashError, ENT_QUOTES, 'ENT_QUOTES', 'UTF-8') ?></div>
-            <?php endif; ?>
-
-            <?php if ($error): ?>
-                <div class="alert alert-danger"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></div>
-            <?php endif; ?>
-
-            <!-- 残高カード -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">メイン口座</h5>
-
-                    <p class="text-muted mb-1">口座番号</p>
-                    <p class="fs-6 fw-semibold"><?= htmlspecialchars($accountNumber, ENT_QUOTES, 'UTF-8') ?></p>
-
-                    <p class="text-muted mb-1">現在残高</p>
-                    <p class="fs-2 fw-bold text-primary"><?= $balance !== null ? number_format($balance) . ' 円' : '---' ?></p>
-
-                    <div class="row mt-4 g-2">
-                        <!-- 取引明細 -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <a href="transactions.php" class="btn btn-primary w-100">取引明細を見る</a>
+    <section class="mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 fw-bold mb-0">ログイン後メニュー</h2>
+            <a href="logout.php" class="btn btn-outline-secondary btn-sm">ログアウト</a>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-4">
+                <a href="profile_me.php" class="text-decoration-none text-dark">
+                    <article class="card quick-card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h6 fw-bold">プロフィール概要</h3>
+                            <p class="text-muted small mb-0">お客さま情報と連絡先の最新内容を確認できます。</p>
                         </div>
-                    </div>
-
-
-                    </div>
-
-                </div>
+                    </article>
+                </a>
             </div>
-
-            <!-- 振込フォーム -->
-            <div id="transfer" class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">振込</h5>
-                </div>
-                <div class="card-body">
-                    <form method="post" action="do_transfer.php" class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">振込先口座番号</label>
-                            <input type="text" name="toAccountNumber" class="form-control" required>
+            <div class="col-md-6 col-lg-4">
+                <a href="accounts_list.php" class="text-decoration-none text-dark">
+                    <article class="card quick-card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h6 fw-bold">口座一覧・詳細</h3>
+                            <p class="text-muted small mb-0">保有口座の一覧、残高、口座詳細を確認できます。</p>
                         </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">金額</label>
-                            <div class="input-group">
-                                <input type="number" name="amount" class="form-control" min="1" required>
-                                <span class="input-group-text">円</span>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">メモ（任意）</label>
-                            <input type="text" name="description" class="form-control" placeholder="家賃など">
-                        </div>
-
-                        <div class="col-12">
-                            <button class="btn btn-primary w-100" type="submit">振込する</button>
-                        </div>
-                    </form>
-                </div>
+                    </article>
+                </a>
             </div>
-            <div id="transfer" class="card shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">振込</h5>
-                </div>
-                <div class="card-body">
-                    <!-- ★ 住所変更ボタン -->
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <a href="address_change.php" class="btn btn-outline-primary w-100">
-                            住所変更のお手続き
-                        </a>
-                    </div>
-                </div>
-
-                </div>
+            <div class="col-md-6 col-lg-4">
+                <a href="beneficiaries.php" class="text-decoration-none text-dark">
+                    <article class="card quick-card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h6 fw-bold">振込先管理</h3>
+                            <p class="text-muted small mb-0">よく使う振込先の登録、確認、削除ができます。</p>
+                        </div>
+                    </article>
+                </a>
             </div>
-        </main>
-
-    </div>
-</div>
-
-</body>
-</html>
+            <div class="col-md-6 col-lg-4">
+                <a href="security_center.php" class="text-decoration-none text-dark">
+                    <article class="card quick-card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h6 fw-bold">セキュリティ</h3>
+                            <p class="text-muted small mb-0">ログイン履歴の確認とセッション管理ができます。</p>
+                        </div>
+                    </article>
+                </a>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <a href="transactions.php" class="text-decoration-none text-dark">
+                    <article class="card quick-card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h6 fw-bold">取引明細</h3>
+                            <p class="text-muted small mb-0">入出金・振込を含む取引履歴を確認できます。</p>
+                        </div>
+                    </article>
+                </a>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <a href="address_change.php" class="text-decoration-none text-dark">
+                    <article class="card quick-card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h3 class="h6 fw-bold">住所変更</h3>
+                            <p class="text-muted small mb-0">住所変更の申請と受付状況の確認ができます。</p>
+                        </div>
+                    </article>
+                </a>
+            </div>
+        </div>
+    </section>
+</main>
+<?php require_once 'partials/footer.php'; ?>

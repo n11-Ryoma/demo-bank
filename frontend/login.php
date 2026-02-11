@@ -1,11 +1,16 @@
-<?php
+﻿<?php
 require_once 'config.php';
+
+function h($value)
+{
+    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+}
 
 $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
+    $username = trim($_POST['username'] ?? '');
+    $password = trim($_POST['password'] ?? '');
 
     try {
         $res = api_request('POST', '/api/auth/login', [
@@ -13,60 +18,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'password' => $password,
         ]);
 
-        if ($res['status'] === 200 && isset($res['body']['token'])) {
+        if (($res['status'] ?? 0) === 200 && is_array($res['body']) && isset($res['body']['token'])) {
             $_SESSION['jwt_token'] = $res['body']['token'];
-            $_SESSION['username']  = $username;
+            $_SESSION['username'] = $username;
             header('Location: dashboard.php');
             exit;
+        }
+
+        if (is_string($res['raw'] ?? null) && trim($res['raw']) !== '') {
+            $error = trim($res['raw']);
         } else {
-            $error = 'ログインに失敗しました。ユーザ名/パスワードを確認してください。';
+            $error = 'ログインに失敗しました。ユーザー名とパスワードを確認してください。';
         }
     } catch (Exception $e) {
         $error = '通信エラー: ' . $e->getMessage();
     }
 }
-?>
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>+Acts Bank ログイン</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
 
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
-    <div class="card shadow-sm" style="max-width: 420px; width: 100%;">
-        <div class="card-header text-center bg-primary text-white">
-            <h4 class="my-2">+Acts Bank ログイン</h4>
-        </div>
-        <div class="card-body">
+$pageTitle = 'ログイン';
+$extraStyles = <<<'CSS'
+<style>
+    .login-wrap {
+        min-height: calc(100vh - 160px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 420px;
+        border: 0;
+        box-shadow: 0 16px 28px rgba(18, 50, 74, .12);
+        border-radius: 14px;
+    }
+</style>
+CSS;
+
+require_once 'partials/header.php';
+?>
+<main class="container login-wrap">
+    <div class="card login-card">
+        <div class="card-body p-4 p-md-5">
+            <h1 class="h4 fw-bold mb-3">インターネットバンキング ログイン</h1>
+
             <?php if ($error): ?>
-                <div class="alert alert-danger" role="alert">
-                    <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
-                </div>
+                <div class="alert alert-danger"><?= h($error) ?></div>
             <?php endif; ?>
-            <form method="post" class="mt-2">
+
+            <form method="post">
                 <div class="mb-3">
-                    <label class="form-label">ユーザ名</label>
+                    <label class="form-label">ユーザー名</label>
                     <input type="text" name="username" class="form-control" required autocomplete="username">
                 </div>
-                <div class="mb-3">
+                <div class="mb-4">
                     <label class="form-label">パスワード</label>
                     <input type="password" name="password" class="form-control" required autocomplete="current-password">
                 </div>
                 <button type="submit" class="btn btn-primary w-100">ログイン</button>
             </form>
-        </div>
-        <div class="card-footer text-center text-muted small">
-            初めての方は
-            <a href="register.php">口座開設</a>
-        </div>
-        <div class="card-footer text-center text-muted small">
-            <a href="index.html">HP</a>
+
+            <div class="small text-muted mt-3">
+                初めての方は <a href="register.php">口座開設</a>
+            </div>
         </div>
     </div>
-</div>
-
-</body>
-</html>
+</main>
+<?php require_once 'partials/footer.php'; ?>

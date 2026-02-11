@@ -1,6 +1,7 @@
-﻿package com.example.ebank.auth.service;
+package com.example.ebank.auth.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,10 @@ public class AuthService {
     }
     public List<User> loginWeak(String username, String password) {
         return userRepository.findByUsernameAndPasswordVuln(username, password);
+    }
+
+    public Optional<Long> findUserIdByUsername(String username) {
+        return userRepository.findIdByUsernameSafe(username);
     }
     
 

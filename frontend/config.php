@@ -3,8 +3,8 @@
 
 session_start();
 
-//define('API_BASE_URL', 'http://localhost:8080'); // Spring BootのURL
-define('API_BASE_URL', 'http://192.168.1.76:8080');
+define('API_BASE_URL', 'http://localhost:8080'); // Spring BootのURL
+//define('API_BASE_URL', 'http://192.168.1.76:8080');
 
 function api_request($method, $path, $body = null, $needAuth = false)
 {
@@ -13,6 +13,9 @@ function api_request($method, $path, $body = null, $needAuth = false)
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+    // Timeouts to avoid hanging requests
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 6);
 
     $headers = ['Content-Type: application/json'];
 

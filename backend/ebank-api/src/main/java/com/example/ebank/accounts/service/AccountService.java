@@ -1,10 +1,15 @@
 package com.example.ebank.accounts.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
+import com.example.ebank.accounts.dto.AccountDetailResponse;
+import com.example.ebank.accounts.dto.AccountSummaryItem;
 import com.example.ebank.accounts.dto.BalanceResponse;
 import com.example.ebank.accounts.dto.CashOperationRequest;
 import com.example.ebank.accounts.dto.TransactionHistoryItem;
@@ -160,6 +165,41 @@ public class AccountService {
     }
     public List<TransactionHistoryItem> getMyHistoryFindStr(String username, int limit, int offset,String findStr) {
         return accountRepository.findHistoryByUsernameFindStr(username, limit, offset,findStr);
+    }
+
+    public List<AccountSummaryItem> getMyAccounts(String username) {
+        return accountRepository.findByUsername(username).stream()
+                .map(acc -> new AccountSummaryItem(
+                        acc.getId(),
+                        "ORDINARY",
+                        maskAccountNumber(acc.getAccountNumber()),
+                        acc.getBalance(),
+                        "ACTIVE"
+                ))
+                .collect(Collectors.toList());
+    }
+
+    public AccountDetailResponse getMyAccountDetail(String username, long accountId) {
+        Account acc = accountRepository.findByIdAndUsername(accountId, username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+
+        return new AccountDetailResponse(
+                acc.getId(),
+                acc.getBranchCode(),
+                "ORDINARY",
+                maskAccountNumber(acc.getAccountNumber()),
+                "ACTIVE",
+                accountRepository.findOpenedAtByAccountId(acc.getId()),
+                acc.getBalance()
+        );
+    }
+
+    private String maskAccountNumber(String accountNumber) {
+        if (accountNumber == null || accountNumber.length() <= 4) {
+            return "****";
+        }
+        String suffix = accountNumber.substring(accountNumber.length() - 4);
+        return "****" + suffix;
     }
 }
 

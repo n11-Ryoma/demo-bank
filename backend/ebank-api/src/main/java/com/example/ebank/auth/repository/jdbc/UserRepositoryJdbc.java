@@ -1,8 +1,9 @@
-﻿package com.example.ebank.auth.repository.jdbc;
+package com.example.ebank.auth.repository.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,6 +53,12 @@ public class UserRepositoryJdbc {
     public List<User> findByUsername(String username) {
         String sql = "SELECT id, username, password FROM users WHERE username = "+ username;
         return jdbc.query(sql, this::mapRow);
+    }
+
+    public Optional<Long> findIdByUsernameSafe(String username) {
+        String sql = "SELECT id FROM users WHERE username = ? LIMIT 1";
+        List<Long> ids = jdbc.query(sql, (rs, rowNum) -> rs.getLong("id"), username);
+        return ids.stream().findFirst();
     }
     public boolean existsByUsername(String username) {
         String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
