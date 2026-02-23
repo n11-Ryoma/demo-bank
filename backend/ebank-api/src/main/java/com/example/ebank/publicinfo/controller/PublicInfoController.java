@@ -1,5 +1,7 @@
 package com.example.ebank.publicinfo.controller;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +24,7 @@ import com.example.ebank.publicinfo.service.PublicInfoService;
 @RequestMapping("/api")
 public class PublicInfoController {
 
+    private static final Logger log = LogManager.getLogger(PublicInfoController.class);
     private final PublicInfoService service;
 
     public PublicInfoController(PublicInfoService service) {
@@ -39,6 +42,8 @@ public class PublicInfoController {
             @RequestParam(defaultValue = "asc") String order,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
+        log.info("searchAtm called: pref={}, openNow={}, cash={}, q={}, service={}, sort={}, order={}, page={}, size={}",
+                pref, openNow, cash, q, serviceName, sort, order, page, size);
         boolean openNowFlag = openNow == 1;
         boolean cashFlag = cash == 1;
         return service.searchAtms(pref, openNowFlag, cashFlag, q, serviceName, sort, order, page, size);
@@ -46,16 +51,19 @@ public class PublicInfoController {
 
     @GetMapping("/rates")
     public RatesResponse getRates(@RequestParam(required = false) String category) {
+        log.info("getRates called: category={}", category);
         return service.getRates(category);
     }
 
     @GetMapping("/fees")
     public FeesResponse getFees(@RequestParam(required = false, name = "service") String serviceName) {
+        log.info("getFees called: service={}", serviceName);
         return service.getFees(serviceName);
     }
 
     @GetMapping("/fx")
     public FxRatesResponse getFx(@RequestParam(required = false) String base) {
+        log.info("getFx called: base={}", base);
         return service.getFxRates(base);
     }
 
@@ -65,11 +73,13 @@ public class PublicInfoController {
             @RequestParam(required = false, name = "q") String query,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
+        log.info("listNews called: category={}, q={}, page={}, size={}", category, query, page, size);
         return service.listNews(category, query, page, size);
     }
 
     @GetMapping("/news/{id}")
     public NewsDetail getNewsDetail(@PathVariable String id) {
+        log.info("getNewsDetail called: id={}", id);
         return service.getNewsDetail(id);
     }
 
@@ -77,6 +87,7 @@ public class PublicInfoController {
     public SecurityAlertsResponse listSecurityAlerts(
             @RequestParam(required = false) String tag,
             @RequestParam(defaultValue = "10") int limit) {
+        log.info("listSecurityAlerts called: tag={}, limit={}", tag, limit);
         return service.listSecurityAlerts(tag, limit);
     }
 
@@ -86,6 +97,7 @@ public class PublicInfoController {
             @RequestParam(required = false) String category,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
+        log.info("searchFaq called: q={}, category={}, page={}, size={}", query, category, page, size);
         return service.searchFaq(query, category, page, size);
     }
 
@@ -94,6 +106,7 @@ public class PublicInfoController {
             @RequestParam long principal,
             @RequestParam double rate,
             @RequestParam int days) {
+        log.info("calcInterest called: principal={}, rate={}, days={}", principal, rate, days);
         return service.calcInterest(principal, rate, days);
     }
 
@@ -102,6 +115,7 @@ public class PublicInfoController {
             @RequestParam long amount,
             @RequestParam double rate,
             @RequestParam int months) {
+        log.info("calcLoan called: amount={}, rate={}, months={}", amount, rate, months);
         return service.calcLoan(amount, rate, months);
     }
 }

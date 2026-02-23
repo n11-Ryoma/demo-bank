@@ -50,7 +50,6 @@ public class AuditLogger {
       m.put("method", meta.method());
       m.put("status", meta.status());
       m.put("remoteIp", meta.remoteIp());
-      m.put("userAgent", meta.userAgent());
       m.put("latencyMs", meta.latencyMs());
     }
 

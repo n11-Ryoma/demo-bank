@@ -2,6 +2,8 @@ package com.example.ebank.cards.service;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,6 +16,7 @@ import com.example.ebank.requests.service.ServiceRequestService;
 @Service
 public class CardService {
 
+    private static final Logger log = LogManager.getLogger(CardService.class);
     private final CardRepositoryJdbc cardRepository;
     private final ServiceRequestService requestService;
 
@@ -23,22 +26,26 @@ public class CardService {
     }
 
     public List<CardItem> list(Long userId) {
+        log.info("list called: userId={}", userId);
         return cardRepository.findAllByUserId(userId);
     }
 
     public CardActionResponse lock(Long userId, Long cardId) {
+        log.info("lock called: userId={}, cardId={}", userId, cardId);
         ensureCardExists(userId, cardId);
         cardRepository.updateLockState(cardId, userId, true, "LOCKED");
         return new CardActionResponse("card locked", null);
     }
 
     public CardActionResponse unlock(Long userId, Long cardId) {
+        log.info("unlock called: userId={}, cardId={}", userId, cardId);
         ensureCardExists(userId, cardId);
         cardRepository.updateLockState(cardId, userId, false, "ACTIVE");
         return new CardActionResponse("card unlocked", null);
     }
 
     public CardActionResponse reissue(Long userId, Long cardId) {
+        log.info("reissue called: userId={}, cardId={}", userId, cardId);
         ensureCardExists(userId, cardId);
         cardRepository.updateStatus(cardId, userId, "REISSUE_REQUESTED");
         Long requestId = requestService.create(
@@ -52,6 +59,7 @@ public class CardService {
     }
 
     private void ensureCardExists(Long userId, Long cardId) {
+        log.info("ensureCardExists called: userId={}, cardId={}", userId, cardId);
         cardRepository.findByIdAndUserId(cardId, userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Card not found"));
     }

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -15,6 +17,7 @@ import com.example.ebank.cards.dto.CardItem;
 @Repository
 public class CardRepositoryJdbc {
 
+    private static final Logger log = LogManager.getLogger(CardRepositoryJdbc.class);
     private final NamedParameterJdbcTemplate jdbc;
 
     public CardRepositoryJdbc(NamedParameterJdbcTemplate jdbc) {
@@ -22,6 +25,7 @@ public class CardRepositoryJdbc {
     }
 
     public List<CardItem> findAllByUserId(Long userId) {
+        log.info("findAllByUserId called: userId={}", userId);
         String sql = """
             SELECT id, card_type, masked_number, status, locked, updated_at
             FROM cards
@@ -32,6 +36,7 @@ public class CardRepositoryJdbc {
     }
 
     public Optional<CardItem> findByIdAndUserId(Long cardId, Long userId) {
+        log.info("findByIdAndUserId called: cardId={}, userId={}", cardId, userId);
         String sql = """
             SELECT id, card_type, masked_number, status, locked, updated_at
             FROM cards
@@ -42,6 +47,7 @@ public class CardRepositoryJdbc {
     }
 
     public void updateLockState(Long cardId, Long userId, boolean locked, String status) {
+        log.info("updateLockState called: cardId={}, userId={}, locked={}, status={}", cardId, userId, locked, status);
         String sql = """
             UPDATE cards
             SET locked = :locked, status = :status, updated_at = now()
@@ -55,6 +61,7 @@ public class CardRepositoryJdbc {
     }
 
     public void updateStatus(Long cardId, Long userId, String status) {
+        log.info("updateStatus called: cardId={}, userId={}, status={}", cardId, userId, status);
         String sql = """
             UPDATE cards
             SET status = :status, updated_at = now()

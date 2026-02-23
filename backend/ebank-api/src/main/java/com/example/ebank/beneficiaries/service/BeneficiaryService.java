@@ -3,6 +3,8 @@ package com.example.ebank.beneficiaries.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -15,6 +17,7 @@ import com.example.ebank.beneficiaries.repository.BeneficiaryRepository;
 @Service
 public class BeneficiaryService {
 
+    private static final Logger log = LogManager.getLogger(BeneficiaryService.class);
     private final BeneficiaryRepository beneficiaryRepository;
 
     public BeneficiaryService(BeneficiaryRepository beneficiaryRepository) {
@@ -22,12 +25,14 @@ public class BeneficiaryService {
     }
 
     public List<BeneficiaryResponse> list(Long userId) {
+        log.info("list called: userId={}", userId);
         return beneficiaryRepository.findAllByUserId(userId).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
     public BeneficiaryResponse create(Long userId, BeneficiaryRequest request) {
+        log.info("create called: userId={}, bankName={}", userId, request == null ? null : request.getBankName());
         if (isBlank(request.getBankName()) || isBlank(request.getAccountNumber()) || isBlank(request.getAccountHolderName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "bankName, accountNumber and accountHolderName are required");
         }
@@ -45,6 +50,7 @@ public class BeneficiaryService {
     }
 
     public void delete(Long userId, Long id) {
+        log.info("delete called: userId={}, id={}", userId, id);
         Beneficiary beneficiary = beneficiaryRepository.findByIdAndUserId(id, userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Beneficiary not found"));
         beneficiaryRepository.deleteByIdAndUserId(beneficiary.getId(), userId);

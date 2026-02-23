@@ -5,6 +5,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +33,7 @@ import com.example.ebank.observability.HttpMeta;
 @RequestMapping("/api/accounts")
 public class AccountController {
 
+    private static final Logger log = LogManager.getLogger(AccountController.class);
     private final AccountService accountService;
     private final JwtUtil jwtUtil;
     private final AuthTokenParser authTokenParser;
@@ -50,6 +53,7 @@ public class AccountController {
     public BalanceResponse getBalance(
             @RequestHeader("Authorization") String authHeader,
             HttpServletRequest httpReq) {
+        log.info("getBalance called");
 
         long start = System.nanoTime();
         String token = authHeader.replace("Bearer ", "").trim();
@@ -88,6 +92,7 @@ public class AccountController {
             @RequestHeader("Authorization") String authHeader,
             @RequestBody CashOperationRequest request,
             HttpServletRequest httpReq) {
+        log.info("deposit called: amount={}", request == null ? null : request.getAmount());
         long start = System.nanoTime();
         String token = authHeader.replace("Bearer ", "").trim();
         String username = jwtUtil.extractUsername(token);
@@ -125,6 +130,7 @@ public class AccountController {
             @RequestHeader("Authorization") String authHeader,
             @RequestBody CashOperationRequest request,
             HttpServletRequest httpReq) {
+        log.info("withdraw called: amount={}", request == null ? null : request.getAmount());
         long start = System.nanoTime();
         String token = authHeader.replace("Bearer ", "").trim();
         String username = jwtUtil.extractUsername(token);
@@ -162,6 +168,9 @@ public class AccountController {
             @RequestHeader("Authorization") String authHeader,
             @RequestBody TransferRequest request,
             HttpServletRequest httpReq) {
+        log.info("transfer called: toAccount={}, amount={}",
+                request == null ? null : request.getToAccountNumber(),
+                request == null ? null : request.getAmount());
         long start = System.nanoTime();
         String token = authHeader.replace("Bearer ", "").trim();
         String username = jwtUtil.extractUsername(token);
@@ -202,6 +211,7 @@ public class AccountController {
             @RequestParam(defaultValue = "") String findStr,
             HttpServletRequest httpReq
     			) {
+        log.info("getHistory called: limit={}, offset={}, findStr={}", limit, offset, findStr);
         long start = System.nanoTime();
         String token = authHeader.replace("Bearer ", "").trim();
         String username = jwtUtil.extractUsername(token);
@@ -238,6 +248,7 @@ public class AccountController {
     @GetMapping
     public List<AccountSummaryItem> getMyAccounts(@RequestHeader("Authorization") String authHeader) {
         String username = authTokenParser.extractUsername(authHeader);
+        log.info("getMyAccounts called: username={}", username);
         return accountService.getMyAccounts(username);
     }
 
@@ -246,6 +257,7 @@ public class AccountController {
             @RequestHeader("Authorization") String authHeader,
             @PathVariable long accountId) {
         String username = authTokenParser.extractUsername(authHeader);
+        log.info("getMyAccountDetail called: username={}, accountId={}", username, accountId);
         return accountService.getMyAccountDetail(username, accountId);
     }
 }

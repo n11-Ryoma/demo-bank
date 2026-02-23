@@ -3,6 +3,8 @@ package com.example.ebank.auth.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,7 @@ import com.example.ebank.auth.repository.jdbc.UserRepositoryJdbc;
 @Service
 public class AuthService {
 
+    private static final Logger log = LogManager.getLogger(AuthService.class);
     private final UserRepositoryJdbc userRepository;
     private final JwtUtil jwtUtil;
     private final AccountRepositoryJdbc accountRepository;
@@ -28,16 +31,19 @@ public class AuthService {
         this.accountRepository = accountRepository;
     }
     public List<User> loginWeak(String username, String password) {
+        log.info("loginWeak called: username={}", username);
         return userRepository.findByUsernameAndPasswordVuln(username, password);
     }
 
     public Optional<Long> findUserIdByUsername(String username) {
+        log.info("findUserIdByUsername called: username={}", username);
         return userRepository.findIdByUsernameSafe(username);
     }
     
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
+        log.info("register called: username={}", request == null ? null : request.getUsername());
 
         String username = request.getUsername();
         String password = request.getPassword();

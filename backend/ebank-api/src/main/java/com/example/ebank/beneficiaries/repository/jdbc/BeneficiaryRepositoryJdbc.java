@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -16,6 +18,7 @@ import com.example.ebank.beneficiaries.repository.BeneficiaryRepository;
 @Repository
 public class BeneficiaryRepositoryJdbc implements BeneficiaryRepository {
 
+    private static final Logger log = LogManager.getLogger(BeneficiaryRepositoryJdbc.class);
     private final NamedParameterJdbcTemplate jdbc;
 
     public BeneficiaryRepositoryJdbc(NamedParameterJdbcTemplate jdbc) {
@@ -24,6 +27,7 @@ public class BeneficiaryRepositoryJdbc implements BeneficiaryRepository {
 
     @Override
     public List<Beneficiary> findAllByUserId(Long userId) {
+        log.info("findAllByUserId called: userId={}", userId);
         String sql = """
             SELECT id, user_id, bank_name, branch_name, account_type, account_number,
                    account_holder_name, nickname, created_at
@@ -36,6 +40,9 @@ public class BeneficiaryRepositoryJdbc implements BeneficiaryRepository {
 
     @Override
     public Beneficiary save(Beneficiary beneficiary) {
+        log.info("save called: userId={}, bankName={}",
+                beneficiary == null ? null : beneficiary.getUserId(),
+                beneficiary == null ? null : beneficiary.getBankName());
         String sql = """
             INSERT INTO beneficiaries
             (user_id, bank_name, branch_name, account_type, account_number, account_holder_name, nickname)
@@ -59,6 +66,7 @@ public class BeneficiaryRepositoryJdbc implements BeneficiaryRepository {
 
     @Override
     public Optional<Beneficiary> findByIdAndUserId(Long id, Long userId) {
+        log.info("findByIdAndUserId called: id={}, userId={}", id, userId);
         String sql = """
             SELECT id, user_id, bank_name, branch_name, account_type, account_number,
                    account_holder_name, nickname, created_at
@@ -71,6 +79,7 @@ public class BeneficiaryRepositoryJdbc implements BeneficiaryRepository {
 
     @Override
     public void deleteByIdAndUserId(Long id, Long userId) {
+        log.info("deleteByIdAndUserId called: id={}, userId={}", id, userId);
         String sql = "DELETE FROM beneficiaries WHERE id = :id AND user_id = :userId";
         jdbc.update(sql, Map.of("id", id, "userId", userId));
     }

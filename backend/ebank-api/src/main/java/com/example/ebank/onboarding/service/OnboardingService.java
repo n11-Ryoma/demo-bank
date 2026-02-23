@@ -1,5 +1,7 @@
 package com.example.ebank.onboarding.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,7 @@ import com.example.ebank.user.repository.jdbc.UserProfileRepositoryJdbc;
 @Service
 public class OnboardingService {
 
+    private static final Logger log = LogManager.getLogger(OnboardingService.class);
     private final UserRepositoryJdbc userRepository;
     private final UserProfileRepositoryJdbc profileRepository;
     private final AccountRepositoryJdbc accountRepository;
@@ -29,6 +32,7 @@ public class OnboardingService {
 
     @Transactional
     public OpenAccountResponse openAccount(OpenAccountRequest req) {
+        log.info("openAccount called: username={}", req == null ? null : req.getUsername());
         // 1) username繝ｦ繝九・繧ｯ繝√ぉ繝・け
         if (userRepository.existsByUsername(req.getUsername())) {
             throw new RuntimeException("Username already exists: " + req.getUsername());

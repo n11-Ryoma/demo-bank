@@ -2,6 +2,8 @@ package com.example.ebank.publicinfo.repository.jdbc;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -11,6 +13,7 @@ import com.example.ebank.publicinfo.dto.FeeItem;
 @Repository
 public class FeesRepositoryJdbc {
 
+    private static final Logger log = LogManager.getLogger(FeesRepositoryJdbc.class);
     private final JdbcTemplate jdbc;
 
     public FeesRepositoryJdbc(JdbcTemplate jdbc) {
@@ -18,6 +21,7 @@ public class FeesRepositoryJdbc {
     }
 
     public List<FeeItem> findFees(String service) {
+        log.info("findFees called: service={}", service);
         if (service == null || service.isBlank()) {
             return jdbc.query("select service, channel, amount_yen, note from fee_items order by service, channel",
                     feeRowMapper());

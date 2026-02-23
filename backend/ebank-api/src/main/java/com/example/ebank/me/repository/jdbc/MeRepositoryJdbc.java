@@ -4,6 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +14,7 @@ import com.example.ebank.me.dto.MeResponse;
 @Repository
 public class MeRepositoryJdbc {
 
+    private static final Logger log = LogManager.getLogger(MeRepositoryJdbc.class);
     private final NamedParameterJdbcTemplate jdbc;
 
     public MeRepositoryJdbc(NamedParameterJdbcTemplate jdbc) {
@@ -19,6 +22,7 @@ public class MeRepositoryJdbc {
     }
 
     public MeResponse findByUsername(String username) {
+        log.info("findByUsername called: username={}", username);
         String sql = """
             SELECT u.id AS user_id,
                    u.username,

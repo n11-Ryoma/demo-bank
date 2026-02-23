@@ -3,6 +3,8 @@ package com.example.ebank.accounts.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ import com.example.ebank.model.TransactionType;
 @Service
 public class AccountService {
 
+    private static final Logger log = LogManager.getLogger(AccountService.class);
     private final AccountRepositoryJdbc accountRepository;
 
     public AccountService(AccountRepositoryJdbc accountRepository) {
@@ -30,6 +33,7 @@ public class AccountService {
 
     // ← このメソッドを新しく追加
     public BalanceResponse getMyMainBalance(String username) {
+        log.info("getMyMainBalance called: username={}", username);
 
         // ① username からメイン口座を1件取得（0件なら例外）
         Account account = accountRepository.findMainByUsername(username)
@@ -45,6 +49,7 @@ public class AccountService {
     // ── 入金 ─────────────────────
     @Transactional
     public BalanceResponse deposit(String username, CashOperationRequest req) {
+        log.info("deposit called: username={}, amount={}", username, req == null ? null : req.getAmount());
         if (req.getAmount() <= 0) {
             throw new RuntimeException("Amount must be positive");
         }
@@ -71,6 +76,7 @@ public class AccountService {
     // ── 出金 ─────────────────────
     @Transactional
     public BalanceResponse withdraw(String username, CashOperationRequest req) {
+        log.info("withdraw called: username={}, amount={}", username, req == null ? null : req.getAmount());
         if (req.getAmount() <= 0) {
             throw new RuntimeException("Amount must be positive");
         }
@@ -101,6 +107,10 @@ public class AccountService {
     // ── 振込 ─────────────────────
     @Transactional
     public TransferResponse transfer(String username, TransferRequest request) {
+        log.info("transfer called: username={}, toAccount={}, amount={}",
+                username,
+                request == null ? null : request.getToAccountNumber(),
+                request == null ? null : request.getAmount());
 
         if (request.getAmount() <= 0) {
             throw new RuntimeException("Amount must be positive");
@@ -161,13 +171,16 @@ public class AccountService {
 
     // ── 履歴取得 ─────────────────────
     public List<TransactionHistoryItem> getMyHistory(String username, int limit, int offset) {
+        log.info("getMyHistory called: username={}, limit={}, offset={}", username, limit, offset);
         return accountRepository.findHistoryByUsername(username, limit, offset);
     }
     public List<TransactionHistoryItem> getMyHistoryFindStr(String username, int limit, int offset,String findStr) {
+        log.info("getMyHistoryFindStr called: username={}, limit={}, offset={}, findStr={}", username, limit, offset, findStr);
         return accountRepository.findHistoryByUsernameFindStr(username, limit, offset,findStr);
     }
 
     public List<AccountSummaryItem> getMyAccounts(String username) {
+        log.info("getMyAccounts called: username={}", username);
         return accountRepository.findByUsername(username).stream()
                 .map(acc -> new AccountSummaryItem(
                         acc.getId(),
@@ -180,6 +193,7 @@ public class AccountService {
     }
 
     public AccountDetailResponse getMyAccountDetail(String username, long accountId) {
+        log.info("getMyAccountDetail called: username={}, accountId={}", username, accountId);
         Account acc = accountRepository.findByIdAndUsername(accountId, username)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
 

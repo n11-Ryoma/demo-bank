@@ -36,8 +36,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
 
     String authHeader = request.getHeader("Authorization");
-
-    // ヘッダがない or "Bearer " じゃなければスルー
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       filterChain.doFilter(request, response);
       return;
@@ -46,32 +44,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     String token = authHeader.substring(7);
 
     try {
-      // 署名＆expチェック（JwtUtil側のvalidateでもOK）
-      if (!jwtUtil.validateToken(token)) {
-        sec.emit(
-            "AUTH_TOKEN_INVALID",
-            "LOW",
-            "anonymous",
-            request.getRemoteAddr(),
-            Map.of("path", request.getRequestURI())
-        );
-        filterChain.doFilter(request, response);
-        return;
-      }
-
       String username = jwtUtil.extractUsername(token);
       Long userId = jwtUtil.extractUserId(token);
 
       if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-        // principal は username のまま（既存コードが getName() 前提でも壊れにくい）
-        // credentials は null
-        // authorities は空（role無し）
         UsernamePasswordAuthenticationToken authToken =
             new UsernamePasswordAuthenticationToken(username, null, java.util.Collections.emptyList());
 
-        // details に userId を載せておく（後で取り出せる）
-        // 既存の details を壊さないよう、Mapでまとめて格納
         var details = new WebAuthenticationDetailsSource().buildDetails(request);
         authToken.setDetails(Map.of(
             "web", details,
@@ -80,12 +59,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
       }
-
     } catch (ExpiredJwtException e) {
+      String actor = "anonymous";
+      if (e.getClaims() != null && e.getClaims().getSubject() != null && !e.getClaims().getSubject().isBlank()) {
+        actor = e.getClaims().getSubject();
+      }
       sec.emit(
           "AUTH_TOKEN_EXPIRED",
           "LOW",
-          "anonymous",
+          actor,
           request.getRemoteAddr(),
           Map.of("path", request.getRequestURI())
       );

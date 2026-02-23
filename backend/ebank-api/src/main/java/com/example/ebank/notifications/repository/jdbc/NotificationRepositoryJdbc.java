@@ -4,6 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -13,6 +15,7 @@ import com.example.ebank.notifications.dto.NotificationItem;
 @Repository
 public class NotificationRepositoryJdbc {
 
+    private static final Logger log = LogManager.getLogger(NotificationRepositoryJdbc.class);
     private final NamedParameterJdbcTemplate jdbc;
 
     public NotificationRepositoryJdbc(NamedParameterJdbcTemplate jdbc) {
@@ -20,6 +23,7 @@ public class NotificationRepositoryJdbc {
     }
 
     public List<NotificationItem> findByUserId(Long userId, int limit, boolean unreadOnly) {
+        log.info("findByUserId called: userId={}, limit={}, unreadOnly={}", userId, limit, unreadOnly);
         StringBuilder sql = new StringBuilder("""
             SELECT id, title, message, severity, category, is_read, created_at
             FROM notifications

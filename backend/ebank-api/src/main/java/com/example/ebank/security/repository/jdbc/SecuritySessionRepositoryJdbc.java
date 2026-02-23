@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -16,6 +18,7 @@ import com.example.ebank.security.dto.SessionItem;
 @Repository
 public class SecuritySessionRepositoryJdbc {
 
+    private static final Logger log = LogManager.getLogger(SecuritySessionRepositoryJdbc.class);
     private final NamedParameterJdbcTemplate jdbc;
 
     public SecuritySessionRepositoryJdbc(NamedParameterJdbcTemplate jdbc) {
@@ -23,6 +26,7 @@ public class SecuritySessionRepositoryJdbc {
     }
 
     public void insertSession(String sessionId, Long userId, String token, String ip, String userAgent) {
+        log.info("insertSession called: sessionId={}, userId={}", sessionId, userId);
         String sql = """
             INSERT INTO user_sessions
             (session_id, user_id, jwt_token, ip, user_agent)
@@ -38,6 +42,7 @@ public class SecuritySessionRepositoryJdbc {
     }
 
     public void insertLoginHistory(Long userId, String result, String ip, String userAgent) {
+        log.info("insertLoginHistory called: userId={}, result={}", userId, result);
         String sql = """
             INSERT INTO login_history
             (user_id, result, ip, user_agent)
@@ -52,6 +57,7 @@ public class SecuritySessionRepositoryJdbc {
     }
 
     public List<LoginHistoryItem> findLoginHistory(Long userId, int limit) {
+        log.info("findLoginHistory called: userId={}, limit={}", userId, limit);
         String sql = """
             SELECT occurred_at, ip, user_agent, result
             FROM login_history
@@ -63,6 +69,7 @@ public class SecuritySessionRepositoryJdbc {
     }
 
     public List<SessionItem> findSessions(Long userId) {
+        log.info("findSessions called: userId={}", userId);
         String sql = """
             SELECT session_id, login_at, ip, user_agent
             FROM user_sessions
@@ -73,22 +80,26 @@ public class SecuritySessionRepositoryJdbc {
     }
 
     public int deleteSessionByToken(Long userId, String token) {
+        log.info("deleteSessionByToken called: userId={}", userId);
         String sql = "DELETE FROM user_sessions WHERE user_id = :userId AND jwt_token = :token";
         return jdbc.update(sql, Map.of("userId", userId, "token", token));
     }
 
     public int deleteSessionBySessionId(Long userId, String sessionId) {
+        log.info("deleteSessionBySessionId called: userId={}, sessionId={}", userId, sessionId);
         String sql = "DELETE FROM user_sessions WHERE user_id = :userId AND session_id = :sessionId";
         return jdbc.update(sql, Map.of("userId", userId, "sessionId", sessionId));
     }
 
     public Optional<Long> findUserIdByToken(String token) {
+        log.info("findUserIdByToken called");
         String sql = "SELECT user_id FROM user_sessions WHERE jwt_token = :token LIMIT 1";
         List<Long> list = jdbc.query(sql, Map.of("token", token), (rs, rowNum) -> rs.getLong("user_id"));
         return list.stream().findFirst();
     }
 
     public Optional<String> findSessionIdByTokenAndUserId(String token, Long userId) {
+        log.info("findSessionIdByTokenAndUserId called: userId={}", userId);
         String sql = """
             SELECT session_id
             FROM user_sessions

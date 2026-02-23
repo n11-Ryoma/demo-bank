@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -16,6 +18,7 @@ import com.example.ebank.requests.dto.RequestItem;
 @Repository
 public class ServiceRequestRepositoryJdbc {
 
+    private static final Logger log = LogManager.getLogger(ServiceRequestRepositoryJdbc.class);
     private final NamedParameterJdbcTemplate jdbc;
 
     public ServiceRequestRepositoryJdbc(NamedParameterJdbcTemplate jdbc) {
@@ -23,6 +26,7 @@ public class ServiceRequestRepositoryJdbc {
     }
 
     public List<RequestItem> findAllByUserId(Long userId, int limit) {
+        log.info("findAllByUserId called: userId={}, limit={}", userId, limit);
         String sql = """
             SELECT id, request_type, status, title, created_at, updated_at
             FROM service_requests
@@ -34,6 +38,7 @@ public class ServiceRequestRepositoryJdbc {
     }
 
     public Optional<RequestDetailResponse> findByIdAndUserId(Long id, Long userId) {
+        log.info("findByIdAndUserId called: id={}, userId={}", id, userId);
         String sql = """
             SELECT id, request_type, status, title, detail, created_at, updated_at
             FROM service_requests
@@ -44,6 +49,7 @@ public class ServiceRequestRepositoryJdbc {
     }
 
     public Long insert(Long userId, String requestType, String status, String title, String detail) {
+        log.info("insert called: userId={}, requestType={}, status={}", userId, requestType, status);
         String sql = """
             INSERT INTO service_requests
             (user_id, request_type, status, title, detail, created_at, updated_at)

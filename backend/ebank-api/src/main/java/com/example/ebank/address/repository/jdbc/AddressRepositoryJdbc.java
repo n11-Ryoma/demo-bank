@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -13,6 +15,7 @@ import com.example.ebank.address.dto.CurrentAddressResponse;
 @Repository
 public class AddressRepositoryJdbc {
 
+    private static final Logger log = LogManager.getLogger(AddressRepositoryJdbc.class);
     private final NamedParameterJdbcTemplate jdbc;
 
     public AddressRepositoryJdbc(NamedParameterJdbcTemplate jdbc) {
@@ -32,7 +35,7 @@ public class AddressRepositoryJdbc {
             String proofFilePath,   // ログ用のパス（いらなければ null でもOK）
             byte[] proofFileData    // DB にしまうバイナリ
     ) {
-
+        log.info("insertAddressChangeRequest called: userId={}, postalCode={}", userId, postalCode);
         String sql = """
             INSERT INTO address_change_requests
                 (user_id, postal_code, prefecture, city,
@@ -59,7 +62,7 @@ public class AddressRepositoryJdbc {
         jdbc.update(sql, params);
     }
     public CurrentAddressResponse findLatestAddressByUserId(Long userId) {
-
+        log.info("findLatestAddressByUserId called: userId={}", userId);
         String sql = """
             SELECT postal_code, prefecture, city, address_line1, address_line2
             FROM address_change_requests

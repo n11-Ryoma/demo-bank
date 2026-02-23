@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
         if (status.is4xxClientError()) {
             log.warn(msg);
         } else {
-            log.error(msg, ex);
+            log.error(msg);
         }
     }
 }

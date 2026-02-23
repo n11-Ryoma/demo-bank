@@ -615,3 +615,41 @@ SELECT COUNT(*) FROM fx_rates;
 SELECT COUNT(*) FROM news_items;
 SELECT COUNT(*) FROM security_alerts;
 SELECT COUNT(*) FROM faq_items;
+
+
+=========================================
+sudo vi /etc/postgresql/16/main/postgresql.conf
+# ログ出力
+logging_collector = on
+log_destination = 'stderr'
+log_directory = 'log'
+log_filename = 'postgresql-%Y-%m-%d.log'
+log_rotation_age = 1d
+log_rotation_size = 100MB
+
+# 追跡性（重要）
+log_line_prefix = '%m [%p] user=%u,db=%d,app=%a,client=%r,tx=%x '
+log_connections = on
+log_disconnections = on
+log_lock_waits = on
+deadlock_timeout = '1s'
+log_checkpoints = on
+
+# SQLログ（まずはこの程度）
+log_statement = 'ddl'
+log_min_duration_statement = 500ms       # 演習中だけ 0 でも可
+log_min_error_statement = error
+log_truncate_on_rotation = on
+log_error_verbosity = default
+
+# DB内部のタイムゾーン
+timezone = 'Asia/Tokyo'
+
+# ログのタイムゾーン
+log_timezone = 'Asia/Tokyo'
+
+
+# セッション暴走対策
+statement_timeout = '30s'
+idle_in_transaction_session_timeout = '60s'
+

@@ -9,6 +9,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -19,6 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 public class RequestIdFilter extends OncePerRequestFilter {
 
+  private static final Logger log = LogManager.getLogger(RequestIdFilter.class);
   public static final String HEADER = "X-Request-Id";
   public static final String CTX_KEY = "requestId";
 
@@ -29,6 +32,7 @@ public class RequestIdFilter extends OncePerRequestFilter {
     String rid = Optional.ofNullable(request.getHeader(HEADER))
         .filter(s -> !s.isBlank())
         .orElseGet(() -> UUID.randomUUID().toString());
+    log.info("RequestId assigned: method={}, path={}, requestId={}", request.getMethod(), request.getRequestURI(), rid);
 
     ThreadContext.put(CTX_KEY, rid);
     response.setHeader(HEADER, rid);

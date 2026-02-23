@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -14,6 +16,7 @@ import com.example.ebank.publicinfo.dto.AtmLocation;
 @Repository
 public class AtmRepositoryJdbc {
 
+    private static final Logger log = LogManager.getLogger(AtmRepositoryJdbc.class);
     private final JdbcTemplate jdbc;
 
     public AtmRepositoryJdbc(JdbcTemplate jdbc) {
@@ -22,6 +25,8 @@ public class AtmRepositoryJdbc {
 
     public SearchResult search(String pref, boolean openNow, boolean cash, String q,
                                String service, String sort, String order, int page, int size) {
+        log.info("search called: pref={}, openNow={}, cash={}, q={}, service={}, sort={}, order={}, page={}, size={}",
+                pref, openNow, cash, q, service, sort, order, page, size);
         StringBuilder where = new StringBuilder(" where 1=1");
         List<Object> params = new ArrayList<>();
 

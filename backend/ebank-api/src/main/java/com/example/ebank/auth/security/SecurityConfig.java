@@ -1,5 +1,7 @@
 package com.example.ebank.auth.security;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,8 +16,11 @@ import com.example.ebank.observability.SecurityEventLogger;
 @EnableWebSecurity
 public class SecurityConfig {
 
+  private static final Logger log = LogManager.getLogger(SecurityConfig.class);
+
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http, JwtUtil jwtUtil, SecurityEventLogger sec) throws Exception {
+    log.info("SecurityFilterChain initialization started");
 
     http.csrf(csrf -> csrf.disable());
 
@@ -33,6 +38,8 @@ public class SecurityConfig {
         .anyRequest().permitAll()
     );
 
-    return http.build();
+    SecurityFilterChain chain = http.build();
+    log.info("SecurityFilterChain initialization completed");
+    return chain;
   }
 }

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -14,6 +16,7 @@ import com.example.ebank.publicinfo.dto.NewsDetail;
 @Repository
 public class NewsRepositoryJdbc {
 
+    private static final Logger log = LogManager.getLogger(NewsRepositoryJdbc.class);
     private final JdbcTemplate jdbc;
 
     public NewsRepositoryJdbc(JdbcTemplate jdbc) {
@@ -21,6 +24,7 @@ public class NewsRepositoryJdbc {
     }
 
     public SearchResult list(String category, String q, int page, int size) {
+        log.info("list called: category={}, q={}, page={}, size={}", category, q, page, size);
         StringBuilder where = new StringBuilder(" where 1=1");
         List<Object> params = new ArrayList<>();
 
@@ -51,6 +55,7 @@ public class NewsRepositoryJdbc {
     }
 
     public NewsDetail findById(String id) {
+        log.info("findById called: id={}", id);
         List<NewsDetail> items = jdbc.query(
                 "select id, category, title, summary, body, published_at, updated_at from news_items where id = ?",
                 newsRowMapper(), id);

@@ -32,7 +32,7 @@ public class UserRepositoryJdbc {
             "WHERE username = '" + username + "' " +
             "AND password = '" + password + "'";
 
-        log.debug("### Executing SQL: {}", sql);
+        //log.debug("### Executing SQL: {}", sql);
 
         return jdbc.query(sql, this::mapRow);
     }

@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -42,6 +44,7 @@ import com.example.ebank.publicinfo.repository.jdbc.SecurityAlertRepositoryJdbc;
 @Service
 public class PublicInfoService {
 
+    private static final Logger log = LogManager.getLogger(PublicInfoService.class);
     private final AtmRepositoryJdbc atmRepository;
     private final RatesRepositoryJdbc ratesRepository;
     private final FeesRepositoryJdbc feesRepository;
@@ -68,6 +71,8 @@ public class PublicInfoService {
 
     public AtmSearchResponse searchAtms(String pref, boolean openNow, boolean cash, String q,
                                         String service, String sort, String order, int page, int size) {
+        log.info("searchAtms called: pref={}, openNow={}, cash={}, q={}, service={}, sort={}, order={}, page={}, size={}",
+                pref, openNow, cash, q, service, sort, order, page, size);
         int safePage = Math.max(page, 1);
         int safeSize = clamp(size, 1, 100);
 
@@ -87,16 +92,19 @@ public class PublicInfoService {
     }
 
     public RatesResponse getRates(String category) {
+        log.info("getRates called: category={}", category);
         List<RateItem> items = ratesRepository.findRates(category);
         return new RatesResponse(nowIso(), items);
     }
 
     public FeesResponse getFees(String service) {
+        log.info("getFees called: service={}", service);
         List<FeeItem> items = feesRepository.findFees(service);
         return new FeesResponse(nowIso(), items);
     }
 
     public FxRatesResponse getFxRates(String base) {
+        log.info("getFxRates called: base={}", base);
         Map<String, Double> fxToJpy = fxRepository.loadFxToJpy();
         String normalizedBase = (base == null || base.isBlank()) ? "JPY" : base.toUpperCase(Locale.ROOT);
         if (!fxToJpy.containsKey(normalizedBase)) {
@@ -120,6 +128,7 @@ public class PublicInfoService {
     }
 
     public NewsListResponse listNews(String category, String q, int page, int size) {
+        log.info("listNews called: category={}, q={}, page={}, size={}", category, q, page, size);
         int safePage = Math.max(page, 1);
         int safeSize = clamp(size, 1, 50);
 
@@ -133,6 +142,7 @@ public class PublicInfoService {
     }
 
     public NewsDetail getNewsDetail(String id) {
+        log.info("getNewsDetail called: id={}", id);
         NewsDetail detail = newsRepository.findById(id);
         if (detail == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "news not found");
@@ -141,12 +151,14 @@ public class PublicInfoService {
     }
 
     public SecurityAlertsResponse listSecurityAlerts(String tag, int limit) {
+        log.info("listSecurityAlerts called: tag={}, limit={}", tag, limit);
         int safeLimit = clamp(limit, 1, 50);
         List<SecurityAlertItem> items = securityRepository.list(tag, safeLimit);
         return new SecurityAlertsResponse(nowIso(), items);
     }
 
     public FaqSearchResponse searchFaq(String q, String category, int page, int size) {
+        log.info("searchFaq called: q={}, category={}, page={}, size={}", q, category, page, size);
         int safePage = Math.max(page, 1);
         int safeSize = clamp(size, 1, 50);
         String query = q == null ? "" : q.trim();
@@ -165,6 +177,7 @@ public class PublicInfoService {
     }
 
     public InterestCalcResponse calcInterest(long principal, double ratePercent, int days) {
+        log.info("calcInterest called: principal={}, ratePercent={}, days={}", principal, ratePercent, days);
         if (principal <= 0 || ratePercent < 0 || days <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "principal, rate, days must be positive");
         }
@@ -174,6 +187,7 @@ public class PublicInfoService {
     }
 
     public LoanCalcResponse calcLoan(long amount, double ratePercent, int months) {
+        log.info("calcLoan called: amount={}, ratePercent={}, months={}", amount, ratePercent, months);
         if (amount <= 0 || ratePercent < 0 || months <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "amount, rate, months must be positive");
         }

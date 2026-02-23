@@ -4,6 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -11,6 +13,7 @@ import com.example.ebank.user.entity.UserProfile;
 @Repository
 public class UserProfileRepositoryJdbc {
 
+    private static final Logger log = LogManager.getLogger(UserProfileRepositoryJdbc.class);
     private final NamedParameterJdbcTemplate jdbc;
 
     public UserProfileRepositoryJdbc(NamedParameterJdbcTemplate jdbc) {
@@ -18,6 +21,7 @@ public class UserProfileRepositoryJdbc {
     }
 
     public void insert(UserProfile profile) {
+        log.info("insert called: userId={}", profile == null ? null : profile.getUserId());
         String sql = """
             INSERT INTO user_profile
               (user_id, name_kanji, name_kana, birth_date, gender,
@@ -41,6 +45,7 @@ public class UserProfileRepositoryJdbc {
     }
 
     public UserProfile findByUserId(String userId) {
+        log.info("findByUserId called: userId={}", userId);
         String sql = """
             SELECT user_id, name_kanji, name_kana, birth_date, gender,
                    phone, postal_code, address, my_number

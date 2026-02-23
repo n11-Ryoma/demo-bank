@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -15,6 +17,7 @@ import com.example.ebank.limits.dto.LimitsResponse;
 @Repository
 public class LimitsRepositoryJdbc {
 
+    private static final Logger log = LogManager.getLogger(LimitsRepositoryJdbc.class);
     private final NamedParameterJdbcTemplate jdbc;
 
     public LimitsRepositoryJdbc(NamedParameterJdbcTemplate jdbc) {
@@ -22,6 +25,7 @@ public class LimitsRepositoryJdbc {
     }
 
     public Optional<LimitsResponse> findByUserId(Long userId) {
+        log.info("findByUserId called: userId={}", userId);
         String sql = """
             SELECT transfer_limit_yen, atm_withdraw_limit_yen, updated_at
             FROM user_limits
@@ -32,6 +36,7 @@ public class LimitsRepositoryJdbc {
     }
 
     public LimitsResponse upsert(Long userId, long transferLimitYen, long atmWithdrawLimitYen) {
+        log.info("upsert called: userId={}, transferLimitYen={}, atmWithdrawLimitYen={}", userId, transferLimitYen, atmWithdrawLimitYen);
         String sql = """
             INSERT INTO user_limits (user_id, transfer_limit_yen, atm_withdraw_limit_yen, updated_at)
             VALUES (:userId, :transferLimitYen, :atmWithdrawLimitYen, now())

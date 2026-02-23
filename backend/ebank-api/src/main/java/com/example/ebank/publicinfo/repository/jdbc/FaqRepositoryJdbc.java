@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -13,6 +15,7 @@ import com.example.ebank.publicinfo.dto.FaqItem;
 @Repository
 public class FaqRepositoryJdbc {
 
+    private static final Logger log = LogManager.getLogger(FaqRepositoryJdbc.class);
     private final JdbcTemplate jdbc;
 
     public FaqRepositoryJdbc(JdbcTemplate jdbc) {
@@ -20,6 +23,7 @@ public class FaqRepositoryJdbc {
     }
 
     public SearchResult search(String query, String category, int page, int size) {
+        log.info("search called: query={}, category={}, page={}, size={}", query, category, page, size);
         StringBuilder where = new StringBuilder(" where 1=1");
         List<Object> params = new ArrayList<>();
 

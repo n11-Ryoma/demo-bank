@@ -65,6 +65,7 @@ public class AddressChangeController {
         }
 
         String token = authHeader.substring(7);
+        String username = jwtUtil.extractUsername(token);
         Long userId = jwtUtil.extractUserId(token);
         if (userId == null) {
             long latencyMs = (System.nanoTime() - start) / 1_000_000;
@@ -85,7 +86,7 @@ public class AddressChangeController {
             long latencyMs = (System.nanoTime() - start) / 1_000_000;
             audit.fail(
                     "ADDRESS_CURRENT",
-                    String.valueOf(userId),
+                    username,
                     null,
                     null,
                     "NOT_FOUND",
@@ -98,7 +99,7 @@ public class AddressChangeController {
         long latencyMs = (System.nanoTime() - start) / 1_000_000;
         audit.success(
                 "ADDRESS_CURRENT",
-                String.valueOf(userId),
+                username,
                 null,
                 null,
                 new HttpMeta("/api/address-change/current", "GET", 200, ip, ua == null ? "" : ua, latencyMs),
@@ -133,6 +134,7 @@ public class AddressChangeController {
         }
 
         String token = authHeader.substring(7);
+        String username = jwtUtil.extractUsername(token);
 
         Long userId = jwtUtil.extractUserId(token);
         if (userId == null) {
@@ -156,7 +158,7 @@ public class AddressChangeController {
             long latencyMs = (System.nanoTime() - start) / 1_000_000;
             audit.fail(
                     "ADDRESS_CHANGE_COMMIT",
-                    String.valueOf(userId),
+                    username,
                     null,
                     null,
                     e.getClass().getSimpleName(),
@@ -169,7 +171,7 @@ public class AddressChangeController {
         long latencyMs = (System.nanoTime() - start) / 1_000_000;
         audit.success(
                 "ADDRESS_CHANGE_COMMIT",
-                String.valueOf(userId),
+                username,
                 null,
                 null,
                 new HttpMeta("/api/address-change/commit", "POST", 200, ip, ua == null ? "" : ua, latencyMs),

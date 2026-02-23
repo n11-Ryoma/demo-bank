@@ -138,22 +138,37 @@ public class AuthController {
 
   @PostMapping("/register")
   public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request, HttpServletRequest httpReq) {
+    log.info("Register attempt: {}", request == null ? null : request.getUsername());
     long start = System.nanoTime();
     String ip = httpReq.getRemoteAddr();
     String ua = httpReq.getHeader("User-Agent");
+    String actor = request == null ? "anonymous" : request.getUsername();
+    try {
+      RegisterResponse res = authService.register(request);
 
-    RegisterResponse res = authService.register(request);
+      long latencyMs = (System.nanoTime() - start) / 1_000_000;
+      audit.success(
+          "AUTH_REGISTER",
+          res.getUsername(),
+          res.getAccountNumber(),
+          null,
+          new HttpMeta("/api/auth/register", "POST", 200, ip, ua == null ? "" : ua, latencyMs),
+          Map.of()
+      );
 
-    long latencyMs = (System.nanoTime() - start) / 1_000_000;
-    audit.success(
-        "AUTH_REGISTER",
-        res.getUsername(),
-        res.getAccountNumber(),
-        null,
-        new HttpMeta("/api/auth/register", "POST", 200, ip, ua == null ? "" : ua, latencyMs),
-        Map.of()
-    );
-
-    return ResponseEntity.ok(res);
+      return ResponseEntity.ok(res);
+    } catch (RuntimeException e) {
+      long latencyMs = (System.nanoTime() - start) / 1_000_000;
+      audit.fail(
+          "AUTH_REGISTER",
+          actor,
+          null,
+          null,
+          e.getClass().getSimpleName(),
+          new HttpMeta("/api/auth/register", "POST", 500, ip, ua == null ? "" : ua, latencyMs),
+          Map.of()
+      );
+      throw e;
+    }
   }
 }
