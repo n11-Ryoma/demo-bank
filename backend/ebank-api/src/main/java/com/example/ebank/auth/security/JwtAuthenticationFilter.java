@@ -68,7 +68,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           "AUTH_TOKEN_EXPIRED",
           "LOW",
           actor,
-          request.getRemoteAddr(),
+          com.example.ebank.observability.ClientIpResolver.resolve(request),
           Map.of("path", request.getRequestURI())
       );
     } catch (Exception e) {
@@ -76,7 +76,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
           "AUTH_TOKEN_INVALID",
           "LOW",
           "anonymous",
-          request.getRemoteAddr(),
+          com.example.ebank.observability.ClientIpResolver.resolve(request),
           Map.of("path", request.getRequestURI())
       );
     }
@@ -84,3 +84,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
   }
 }
+

@@ -40,7 +40,7 @@ public class BeneficiaryController {
     @GetMapping
     public List<BeneficiaryResponse> list(@RequestHeader("Authorization") String authHeader, HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String username = authTokenParser.extractUsername(authHeader);
         long userId = authTokenParser.extractUserId(authHeader);
@@ -78,7 +78,7 @@ public class BeneficiaryController {
             @RequestBody BeneficiaryRequest request,
             HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String username = authTokenParser.extractUsername(authHeader);
         long userId = authTokenParser.extractUserId(authHeader);
@@ -120,7 +120,7 @@ public class BeneficiaryController {
             @PathVariable Long id,
             HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String username = authTokenParser.extractUsername(authHeader);
         long userId = authTokenParser.extractUserId(authHeader);
@@ -150,3 +150,4 @@ public class BeneficiaryController {
         }
     }
 }
+

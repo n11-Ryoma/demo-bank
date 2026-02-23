@@ -36,7 +36,7 @@ public class CardController {
     @GetMapping
     public List<CardItem> list(@RequestHeader("Authorization") String authHeader, HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String username = authTokenParser.extractUsername(authHeader);
         Long userId = authTokenParser.extractUserId(authHeader);
@@ -73,7 +73,7 @@ public class CardController {
             @PathVariable Long cardId,
             HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String username = authTokenParser.extractUsername(authHeader);
         Long userId = authTokenParser.extractUserId(authHeader);
@@ -110,7 +110,7 @@ public class CardController {
             @PathVariable Long cardId,
             HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String username = authTokenParser.extractUsername(authHeader);
         Long userId = authTokenParser.extractUserId(authHeader);
@@ -147,7 +147,7 @@ public class CardController {
             @PathVariable Long cardId,
             HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String username = authTokenParser.extractUsername(authHeader);
         Long userId = authTokenParser.extractUserId(authHeader);
@@ -178,3 +178,4 @@ public class CardController {
         }
     }
 }
+

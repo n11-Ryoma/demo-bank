@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once 'config.php';
 
 function h($value)
@@ -19,6 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
 
         if (($res['status'] ?? 0) === 200 && is_array($res['body']) && isset($res['body']['token'])) {
+            session_regenerate_id(true);
             $_SESSION['jwt_token'] = $res['body']['token'];
             $_SESSION['username'] = $username;
             header('Location: dashboard.php');

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = 'ローン商品のご案内';
 $extraStyles = '<style>
 body { background: #f4f7fb; }

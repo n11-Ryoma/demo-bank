@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = '会社情報';
 $extraStyles = '<style>
 body { background: #f4f7fb; }

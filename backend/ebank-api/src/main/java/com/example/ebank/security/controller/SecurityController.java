@@ -51,7 +51,7 @@ public class SecurityController {
             @RequestParam(defaultValue = "20") int limit,
             HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String username = authTokenParser.extractUsername(authHeader);
         Long userId = authTokenParser.extractUserId(authHeader);
@@ -85,7 +85,7 @@ public class SecurityController {
     @PostMapping("/logout")
     public LogoutResponse logoutCurrent(@RequestHeader("Authorization") String authHeader, HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String token = authTokenParser.extractToken(authHeader);
         String username = authTokenParser.extractUsername(authHeader);
@@ -115,7 +115,7 @@ public class SecurityController {
     @GetMapping("/sessions")
     public List<SessionItem> getSessions(@RequestHeader("Authorization") String authHeader, HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String token = authTokenParser.extractToken(authHeader);
         String username = authTokenParser.extractUsername(authHeader);
@@ -154,7 +154,7 @@ public class SecurityController {
             @PathVariable String sessionId,
             HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         authTokenParser.extractToken(authHeader);
         String username = authTokenParser.extractUsername(authHeader);
@@ -190,3 +190,4 @@ public class SecurityController {
         );
     }
 }
+

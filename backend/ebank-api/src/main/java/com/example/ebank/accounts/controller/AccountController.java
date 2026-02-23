@@ -58,7 +58,7 @@ public class AccountController {
         long start = System.nanoTime();
         String token = authHeader.replace("Bearer ", "").trim();
         String username = jwtUtil.extractUsername(token);
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
 
         try {
@@ -96,7 +96,7 @@ public class AccountController {
         long start = System.nanoTime();
         String token = authHeader.replace("Bearer ", "").trim();
         String username = jwtUtil.extractUsername(token);
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         try {
             BalanceResponse res = accountService.deposit(username, request);
@@ -134,7 +134,7 @@ public class AccountController {
         long start = System.nanoTime();
         String token = authHeader.replace("Bearer ", "").trim();
         String username = jwtUtil.extractUsername(token);
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         try {
             BalanceResponse res = accountService.withdraw(username, request);
@@ -174,7 +174,7 @@ public class AccountController {
         long start = System.nanoTime();
         String token = authHeader.replace("Bearer ", "").trim();
         String username = jwtUtil.extractUsername(token);
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         try {
             TransferResponse res = accountService.transfer(username, request);
@@ -215,7 +215,7 @@ public class AccountController {
         long start = System.nanoTime();
         String token = authHeader.replace("Bearer ", "").trim();
         String username = jwtUtil.extractUsername(token);
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         if("".equals(findStr)) { 
         		List<TransactionHistoryItem> res = accountService.getMyHistory(username, limit, offset);
@@ -261,6 +261,7 @@ public class AccountController {
         return accountService.getMyAccountDetail(username, accountId);
     }
 }
+
 
 
 

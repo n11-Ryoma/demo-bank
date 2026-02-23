@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = '規約・方針';
 $extraStyles = '<style>
 body { background: #f4f7fb; }

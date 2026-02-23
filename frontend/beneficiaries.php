@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once 'auth_common.php';
 require_login();
 

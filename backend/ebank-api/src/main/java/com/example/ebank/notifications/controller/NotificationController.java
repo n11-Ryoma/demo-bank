@@ -38,7 +38,7 @@ public class NotificationController {
             @RequestParam(defaultValue = "false") boolean unreadOnly,
             HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String actor = "anonymous";
         try {
@@ -71,3 +71,4 @@ public class NotificationController {
         }
     }
 }
+

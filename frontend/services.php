@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = 'サービス一覧';
 $extraStyles = '<style>
 body { background: #f4f7fb; }

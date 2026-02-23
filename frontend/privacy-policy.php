@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = '個人情報保護方針';
 $extraStyles = '<style>
 body { background:#f4f7fb; }

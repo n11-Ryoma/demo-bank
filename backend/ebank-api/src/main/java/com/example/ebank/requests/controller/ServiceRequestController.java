@@ -41,7 +41,7 @@ public class ServiceRequestController {
             @RequestParam(defaultValue = "20") int limit,
             HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String actor = "anonymous";
         try {
@@ -80,7 +80,7 @@ public class ServiceRequestController {
             @PathVariable Long requestId,
             HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String actor = "anonymous";
         try {
@@ -113,3 +113,4 @@ public class ServiceRequestController {
         }
     }
 }
+

@@ -653,3 +653,39 @@ log_timezone = 'Asia/Tokyo'
 statement_timeout = '30s'
 idle_in_transaction_session_timeout = '60s'
 
+=========================================
+sudo apt install -y postgresql-16-pgaudit
+CREATE EXTENSION IF NOT EXISTS pgaudit;
+=========================================
+shared_preload_libraries = 'pgaudit'
+
+logging_collector = on
+log_destination = 'stderr'          
+log_line_prefix = '%m [%p] user=%u,db=%d,app=%a,client=%h,session=%c '
+
+log_connections = on
+log_disconnections = on
+log_min_error_statement = error
+log_statement = 'ddl'
+
+log_min_duration_statement = 0      # ※全SQLが出て激重になりやすい（後述）
+
+pgaudit.log = 'read,write,ddl,role'
+pgaudit.log_parameter = on
+pgaudit.log_relation = on
+
+log_directory = 'log'
+log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+log_rotation_age = 1d
+log_rotation_size = 200MB
+log_truncate_on_rotation = on
+
+# DB内部のタイムゾーン
+timezone = 'Asia/Tokyo'
+
+# ログのタイムゾーン
+log_timezone = 'Asia/Tokyo'
+
+# セッション暴走対策
+statement_timeout = '30s'
+idle_in_transaction_session_timeout = '60s'

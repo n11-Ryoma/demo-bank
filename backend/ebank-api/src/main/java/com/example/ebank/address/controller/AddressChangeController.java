@@ -47,7 +47,7 @@ public class AddressChangeController {
             HttpServletRequest httpReq) {
 
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -115,7 +115,7 @@ public class AddressChangeController {
             HttpServletRequest httpReq) {
 
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
 
         // Authorization check
@@ -180,3 +180,4 @@ public class AddressChangeController {
         return ResponseEntity.ok(res);
     }
 }
+

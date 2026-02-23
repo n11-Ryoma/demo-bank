@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = 'オンラインバンキング利用規約';
 $extraStyles = '<style>
 body { background:#f4f7fb; }

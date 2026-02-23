@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.ebank.observability.AuditLogger;
@@ -39,7 +43,7 @@ public class InternalHttpClientController {
             HttpServletRequest httpReq) {
 
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String host = extractHost(url);
         String scheme = extractScheme(url);
@@ -60,7 +64,10 @@ public class InternalHttpClientController {
         }
 
         try {
-            String res = new RestTemplate().getForObject(url, String.class);
+            RestTemplate restTemplate = new RestTemplate();
+            HttpEntity<Void> requestEntity = new HttpEntity<>(buildForwardHeaders(httpReq, ip, ua));
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, requestEntity, String.class);
+            String res = response.getBody() == null ? "" : response.getBody();
             long latencyMs = (System.nanoTime() - start) / 1_000_000;
             audit.success(
                     "INTEGRATION_FETCH",
@@ -91,6 +98,29 @@ public class InternalHttpClientController {
             );
             throw e;
         }
+    }
+
+    private HttpHeaders buildForwardHeaders(HttpServletRequest req, String resolvedIp, String userAgent) {
+        HttpHeaders headers = new HttpHeaders();
+
+        String xff = req.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            headers.add("X-Forwarded-For", xff);
+        } else if (resolvedIp != null && !resolvedIp.isBlank()) {
+            headers.add("X-Forwarded-For", resolvedIp);
+        }
+
+        String xRealIp = req.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isBlank()) {
+            headers.add("X-Real-IP", xRealIp);
+        } else if (resolvedIp != null && !resolvedIp.isBlank()) {
+            headers.add("X-Real-IP", resolvedIp);
+        }
+
+        if (userAgent != null && !userAgent.isBlank()) {
+            headers.add("User-Agent", userAgent);
+        }
+        return headers;
     }
 
     private String extractHost(String rawUrl) {
@@ -143,3 +173,4 @@ public class InternalHttpClientController {
         return rawUrl.contains("@");
     }
 }
+

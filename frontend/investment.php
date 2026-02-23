@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = '資産運用のご案内';
 $extraStyles = '<style>
 body { background: #f4f7fb; }

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = '金融商品に関する重要事項説明';
 $extraStyles = '<style>
 body { background:#f4f7fb; }

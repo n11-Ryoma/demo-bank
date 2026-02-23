@@ -41,7 +41,7 @@ public class LimitsController {
     @GetMapping
     public LimitsResponse getLimits(@RequestHeader("Authorization") String authHeader, HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String username = authTokenParser.extractUsername(authHeader);
         Long userId = authTokenParser.extractUserId(authHeader);
@@ -78,7 +78,7 @@ public class LimitsController {
             @RequestBody LimitsUpdateRequest request,
             HttpServletRequest httpReq) {
         long start = System.nanoTime();
-        String ip = httpReq.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
         String ua = httpReq.getHeader("User-Agent");
         String username = authTokenParser.extractUsername(authHeader);
         Long userId = authTokenParser.extractUserId(authHeader);
@@ -145,3 +145,4 @@ public class LimitsController {
         }
     }
 }
+

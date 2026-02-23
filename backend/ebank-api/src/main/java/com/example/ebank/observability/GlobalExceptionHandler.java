@@ -45,7 +45,7 @@ public class GlobalExceptionHandler {
     private void logByStatus(HttpStatus status, HttpServletRequest req, Exception ex) {
         String path = req.getRequestURI();
         String method = req.getMethod();
-        String ip = req.getRemoteAddr();
+        String ip = com.example.ebank.observability.ClientIpResolver.resolve(req);
         String ua = req.getHeader("User-Agent");
         String msg = String.format("HTTP %d %s %s ip=%s ua=%s ex=%s",
                 status.value(), method, path, ip, ua == null ? "" : ua, ex.getClass().getSimpleName());
@@ -57,3 +57,4 @@ public class GlobalExceptionHandler {
         }
     }
 }
+

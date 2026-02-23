@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = '普通預金規定';
 $extraStyles = '<style>
 body { background:#f4f7fb; }

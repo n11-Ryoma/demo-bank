@@ -58,7 +58,7 @@ public class AuthController {
   public AuthResponse login(@RequestBody LoginRequest request, HttpServletRequest httpReq) {
 
     long start = System.nanoTime();
-    String ip = httpReq.getRemoteAddr();
+    String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
     String ua = httpReq.getHeader("User-Agent");
     String actor = request.getUsername();
     String key = ip + ":" + actor;
@@ -140,7 +140,7 @@ public class AuthController {
   public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest request, HttpServletRequest httpReq) {
     log.info("Register attempt: {}", request == null ? null : request.getUsername());
     long start = System.nanoTime();
-    String ip = httpReq.getRemoteAddr();
+    String ip = com.example.ebank.observability.ClientIpResolver.resolve(httpReq);
     String ua = httpReq.getHeader("User-Agent");
     String actor = request == null ? "anonymous" : request.getUsername();
     try {
